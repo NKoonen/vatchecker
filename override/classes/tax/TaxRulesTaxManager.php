@@ -28,7 +28,7 @@ use PrestaShop\PrestaShop\Adapter\ServiceLocator;
 /**
  * @since 1.5.0.1
  */
-class TaxRulesTaxManagerCore implements TaxManagerInterface
+class TaxRulesTaxManager extends TaxRulesTaxManagerCore
 {
     public $address;
     public $type;
