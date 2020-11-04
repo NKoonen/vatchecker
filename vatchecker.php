@@ -67,7 +67,7 @@ class Vatchecker extends Module
     {
         $this->name = 'vatchecker';
         $this->tab = 'billing_invoicing';
-        $this->version = '1.0.1';
+        $this->version = '1.0.2';
         $this->author = 'Inform-All';
         $this->need_instance = 1;
 
@@ -257,33 +257,29 @@ class Vatchecker extends Module
         );
     }
 
-    public function hookActionValidateCustomerAddressForm(&$params)
-    {
+	public function hookActionValidateCustomerAddressForm(&$params)
+	{
 
-        $is_valid = true;
-        $form = $params['form'];
-        $countryCode = Country::getIsoById($form->getField('id_country')->getValue());
-        $vatNumber = $form->getField('vat_number')->getValue();
+		$is_valid = FALSE;
+		$form = $params['form'];
+		$countryCode = Country::getIsoById($form->getField('id_country')->getValue());
 
-        if (Country::getIsoById(Configuration::get('VATCHECKER_ORIGIN_COUNTRY')) != $countryCode) {
-            if (Configuration::get('VATCHECKER_LIVE_MODE', true) && $vatNumber != null && in_array(
-                    $countryCode,
-                    $this->EUCountries
-                )) {
-                $vatNumber = str_replace($countryCode, "", $vatNumber);
-                $is_valid = $this->checkVies($countryCode, $vatNumber, $form);
+		if (Country::getIsoById(Configuration::get('VATCHECKER_ORIGIN_COUNTRY')) != $countryCode) {
+			if (Configuration::get('VATCHECKER_LIVE_MODE', TRUE) && in_array($countryCode, $this->EUCountries)) {
+				$vatNumber = $form->getField('vat_number')->getValue();
+				if (strlen($vatNumber) > 1) {
+					$vatNumber = str_replace($countryCode, "", $vatNumber);
+					$is_valid = $this->checkVies($countryCode, $vatNumber, $form);
+				}
+			}
+			if ($is_valid) {
+				// If all is correct, put the customer in the group
+				$this->context->customer->addGroups(array((int)Configuration::get('VATCHECKER_NO_TAX_GROUP')));
+			}
+		}
+		return $is_valid;
 
-            }
-            if($is_valid)
-            {
-                // If all is correct, put the customer in the group
-                $this->context->customer->addGroups(array((int)Configuration::get('VATCHECKER_NO_TAX_GROUP')));
-            }
-        }
-
-        return $is_valid;
-
-    }
+	}
 
     protected function checkVies($countryCode, $vatNumber, $form)
     {
