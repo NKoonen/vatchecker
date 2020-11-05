@@ -267,7 +267,7 @@ class Vatchecker extends Module
 		if (Country::getIsoById(Configuration::get('VATCHECKER_ORIGIN_COUNTRY')) != $countryCode) {
 			if (Configuration::get('VATCHECKER_LIVE_MODE', TRUE) && in_array($countryCode, $this->EUCountries)) {
 				$vatNumber = $form->getField('vat_number')->getValue();
-				if (strlen($vatNumber) > 1) {
+				if (strlen($vatNumber) > 0) {
 					$vatNumber = str_replace($countryCode, "", $vatNumber);
 					$is_valid = $this->checkVies($countryCode, $vatNumber, $form);
 				}
