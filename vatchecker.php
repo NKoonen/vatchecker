@@ -294,22 +294,22 @@ class Vatchecker extends Module
 
 	}
 
-	public function checkVat( $vatNumber, $country = null ) {
+	public function checkVat( $vatNumber, $countryCode = null ) {
 
 		if ( ! Configuration::get('VATCHECKER_LIVE_MODE', true ) ) {
 			return null;
 		}
 
-		if ( is_numeric( $country ) ) {
-			$country = Country::getIsoById( $country );
+		if ( is_numeric( $countryCode ) ) {
+			$countryCode = Country::getIsoById( $countryCode );
 		}
 
-		if ( ! in_array( $country, $this->EUCountries ) ) {
+		if ( ! in_array( $countryCode, $this->EUCountries ) ) {
 			return $this->l('Please select an EU country');
 		}
 
-		$vatNumber = str_replace( $country, "", $vatNumber);
-		return $this->checkVies( $country, $vatNumber );
+		$vatNumber = str_replace( $countryCode, "", $vatNumber);
+		return $this->checkVies( $countryCode, $vatNumber );
 	}
 
 	protected function checkVies( $countryCode, $vatNumber )
