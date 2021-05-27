@@ -116,7 +116,7 @@ class Vatchecker extends Module
 	{
 		$json = array(
 			'ajax_url' => $this->getPathUri() . 'ajax.php',
-			'token' => '',
+			'token' => Tools::getToken( 'vatchecker' ),
 		);
 
 		echo '<script id="vatchecker_js">var vatchecker = ' . json_encode( $json ) . '</script>';

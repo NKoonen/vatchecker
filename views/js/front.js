@@ -29,7 +29,6 @@
 jQuery( function( $ ) {
 
 	vatchecker.validate = function( vat_number, id_country, $elem ) {
-		const token = prestashop.static_token;
 		$elem.removeClass( 'validated error text-danger text-success' ).css( { 'opacity': '0.5' } );
 		$elem.next( '.vat-error' ).remove();
 
@@ -39,7 +38,7 @@ jQuery( function( $ ) {
 			headers: {"cache-control": "no-cache"},
 			async: false,
 			data: {
-				vatchecker: token,
+				vatchecker: vatchecker.token,
 				vat_number: vat_number,
 				id_country: id_country,
 			},
