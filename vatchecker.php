@@ -93,6 +93,7 @@ class Vatchecker extends Module
 	public function install()
 	{
 		Configuration::updateValue('VATCHECKER_LIVE_MODE', true);
+		Configuration::updateValue('VATCHECKER_ALLOW_OFFLINE', true);
 
 		return parent::install() &&
 			$this->registerHook('displayHeader') &&
@@ -103,6 +104,7 @@ class Vatchecker extends Module
 	public function uninstall()
 	{
 		Configuration::deleteByName('VATCHECKER_LIVE_MODE');
+		Configuration::deleteByName('VATCHECKER_ALLOW_OFFLINE');
 
 		return parent::uninstall();
 	}
@@ -160,9 +162,10 @@ class Vatchecker extends Module
 	protected function getConfigFormValues()
 	{
 		return array(
-			'VATCHECKER_LIVE_MODE' => Configuration::get('VATCHECKER_LIVE_MODE', true),
+			'VATCHECKER_LIVE_MODE'      => Configuration::get('VATCHECKER_LIVE_MODE', true),
+			'VATCHECKER_ALLOW_OFFLINE'  => Configuration::get('VATCHECKER_ALLOW_OFFLINE', true),
 			'VATCHECKER_ORIGIN_COUNTRY' => Configuration::get('VATCHECKER_ORIGIN_COUNTRY', '0'),
-			'VATCHECKER_NO_TAX_GROUP' => Configuration::get('VATCHECKER_NO_TAX_GROUP', null),
+			'VATCHECKER_NO_TAX_GROUP'   => Configuration::get('VATCHECKER_NO_TAX_GROUP', null),
 		);
 	}
 
@@ -234,6 +237,25 @@ class Vatchecker extends Module
 							),
 							array(
 								'id' => 'active_off',
+								'value' => false,
+								'label' => $this->l('Disabled'),
+							),
+						),
+					),
+					array(
+						'type' => 'switch',
+						'label' => $this->l('Offline validation'),
+						'name' => 'VATCHECKER_ALLOW_OFFLINE',
+						'is_bool' => true,
+						'desc' => $this->l('Accept VAT numbers if the VIES validation service is offline'),
+						'values' => array(
+							array(
+								'id' => 'offline_enabled',
+								'value' => true,
+								'label' => $this->l('Enabled'),
+							),
+							array(
+								'id' => 'offline_disabled',
 								'value' => false,
 								'label' => $this->l('Disabled'),
 							),
@@ -338,10 +360,13 @@ class Vatchecker extends Module
 
 			if ($result->valid === true) {
 				return true;
-			} else {
-				return $this->l('This is not a valid VAT number');
 			}
+			return $this->l('This is not a valid VAT number');
+
 		} catch ( Throwable $e ) {
+			if ( Configuration::get('VATCHECKER_ALLOW_OFFLINE', true ) ) {
+				return true;
+			}
 			return $this->l( 'EU VIES server not responding' );
 		}
 	}
