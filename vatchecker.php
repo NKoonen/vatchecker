@@ -271,36 +271,45 @@ class Vatchecker extends Module
 
 		$is_valid = $this->checkVat( $vatNumber, $id_country );
 
-		if ( true !== $is_valid ) {
-			// If all is correct, put the customer in the group.
-			$group = Configuration::get('VATCHECKER_NO_TAX_GROUP');
-			if ( $group ) {
+		if ( true === $is_valid ) {
+
+			$is_origin_country = ( Configuration::get('VATCHECKER_ORIGIN_COUNTRY') === $id_country );
+			$group             = Configuration::get('VATCHECKER_NO_TAX_GROUP');
+
+			if ( ! $is_origin_country && $group ) {
+				// If all is correct, put the customer in the group.
 				$this->context->customer->addGroups( array( (int) $group ) );
 			}
 		} else {
-			$form->getField('vat_number')->addError( $is_valid );
-			$is_valid = false;
+			// @todo Remove from group.
+			if ( null === $is_valid ) {
+				// VAT number
+				$is_valid = true;
+			} else {
+				$form->getField('vat_number')->addError( $is_valid );
+			}
 		}
 
 		return $is_valid;
 
 	}
 
-	public function checkVat( $vatNumber, $id_country = 0 ) {
+	public function checkVat( $vatNumber, $country = null ) {
 
 		if ( ! Configuration::get('VATCHECKER_LIVE_MODE', true ) ) {
-			return true;
+			return null;
 		}
 
-		$countryCode = Country::getIsoById( $id_country );
-		$is_origin_country = Country::getIsoById( Configuration::get('VATCHECKER_ORIGIN_COUNTRY') ) != $countryCode;
-
-		if ( $is_origin_country || ! in_array( $countryCode, $this->EUCountries ) ) {
-			return true;
+		if ( is_numeric( $country ) ) {
+			$country = Country::getIsoById( $country );
 		}
 
-		$vatNumber = str_replace($countryCode, "", $vatNumber);
-		return $this->checkVies( $countryCode, $vatNumber );
+		if ( ! in_array( $country, $this->EUCountries ) ) {
+			return $this->l('Please select an EU country');
+		}
+
+		$vatNumber = str_replace( $country, "", $vatNumber);
+		return $this->checkVies( $country, $vatNumber );
 	}
 
 	protected function checkVies( $countryCode, $vatNumber )
