@@ -265,44 +265,64 @@ class Vatchecker extends Module
 
 	public function hookActionValidateCustomerAddressForm(&$params)
 	{
+		$form       = $params['form'];
+		$id_country = $form->getField('id_country')->getValue();
+		$vatNumber  = $form->getField('vat_number')->getValue();
 
-		$is_valid = FALSE;
-		$form = $params['form'];
-		$countryCode = Country::getIsoById($form->getField('id_country')->getValue());
+		$is_valid = $this->checkVat( $vatNumber, $id_country );
 
-		if (Country::getIsoById(Configuration::get('VATCHECKER_ORIGIN_COUNTRY')) != $countryCode) {
-			if (Configuration::get('VATCHECKER_LIVE_MODE', TRUE) && in_array($countryCode, $this->EUCountries)) {
-				$vatNumber = $form->getField('vat_number')->getValue();
-				if (strlen($vatNumber) > 0) {
-					$vatNumber = str_replace($countryCode, "", $vatNumber);
-					$is_valid = $this->checkVies($countryCode, $vatNumber, $form);
-				}
+		if ( true !== $is_valid ) {
+			// If all is correct, put the customer in the group.
+			$group = Configuration::get('VATCHECKER_NO_TAX_GROUP');
+			if ( $group ) {
+				$this->context->customer->addGroups( array( (int) $group ) );
 			}
-			if ($is_valid) {
-				// If all is correct, put the customer in the group
-				$this->context->customer->addGroups(array((int)Configuration::get('VATCHECKER_NO_TAX_GROUP')));
-			}
+		} else {
+			$form->getField('vat_number')->addError( $is_valid );
+			$is_valid = false;
 		}
+
 		return $is_valid;
 
 	}
 
-    protected function checkVies($countryCode, $vatNumber, $form)
-    {
-        $client = new SoapClient($this->_SOAPUrl);
+	public function checkVat( $vatNumber, $id_country = 0 ) {
 
-        $params = array(
-            'countryCode' => $countryCode,
-            'vatNumber' => $vatNumber,
-        );
+		if ( ! Configuration::get('VATCHECKER_LIVE_MODE', true ) ) {
+			return true;
+		}
 
-        $result = $client->__soapCall('checkVat', array($params));
+		$countryCode = Country::getIsoById( $id_country );
+		$is_origin_country = Country::getIsoById( Configuration::get('VATCHECKER_ORIGIN_COUNTRY') ) != $countryCode;
 
-        if ($result->valid === true) {
-                return true;
-        } else {
-            $form->getField('vat_number')->addError($this->l('This is not a valid VAT number'));
-            return false;
-        }
-    }
+		if ( $is_origin_country || ! in_array( $countryCode, $this->EUCountries ) ) {
+			return true;
+		}
+
+		$vatNumber = str_replace($countryCode, "", $vatNumber);
+		return $this->checkVies( $countryCode, $vatNumber );
+	}
+
+	protected function checkVies( $countryCode, $vatNumber )
+	{
+		try {
+
+			$client = new SoapClient($this->_SOAPUrl);
+
+			$params = array(
+				'countryCode' => $countryCode,
+				'vatNumber' => $vatNumber,
+			);
+
+			$result = $client->__soapCall('checkVat', array($params));
+
+			if ($result->valid === true) {
+				return true;
+			} else {
+				return $this->l('This is not a valid VAT number');
+			}
+		} catch ( Throwable $e ) {
+			return $this->l( 'EU VIES server not responding' );
+		}
+	}
 }
