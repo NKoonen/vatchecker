@@ -26,3 +26,13 @@
  * to avoid any conflicts with others containers.
  */
 
+jQuery( function( $ ) {
+
+	$(document).on( 'blur', '[name="vat_number"]', function () {
+		var $this = $( this ),
+
+		// Remove invalid characters.
+		$this.val( $this.val().toUpperCase().replace( /[^A-Z0-9]/gi, '' ) );
+	} );
+
+} );
