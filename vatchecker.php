@@ -95,8 +95,14 @@ class Vatchecker extends Module
         Configuration::updateValue('VATCHECKER_LIVE_MODE', true);
 
         return parent::install() &&
+			$this->registerHook('displayHeader') &&
             $this->registerHook('actionValidateCustomerAddressForm');
     }
+
+	public function hookDisplayHeader( $params )
+	{
+		$this->context->controller->addJS( $this->_path . 'views/js/front.js' );
+	}
 
     public function uninstall()
     {
