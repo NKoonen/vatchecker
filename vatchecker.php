@@ -96,6 +96,7 @@ class Vatchecker extends Module
 
 		return parent::install() &&
 			$this->registerHook('displayHeader') &&
+			$this->registerHook('displayBeforeBodyClosingTag') &&
 			$this->registerHook('actionValidateCustomerAddressForm');
 	}
 
@@ -109,6 +110,16 @@ class Vatchecker extends Module
 	public function hookDisplayHeader( $params )
 	{
 		$this->context->controller->addJS( $this->_path . 'views/js/front.js' );
+	}
+
+	public function hookDisplayBeforeBodyClosingTag( $params )
+	{
+		$json = array(
+			'ajax_url' => $this->getPathUri() . 'ajax.php',
+			'token' => '',
+		);
+
+		echo '<script id="vatchecker_js">var vatchecker = ' . json_encode( $json ) . '</script>';
 	}
 
 	/**
