@@ -337,7 +337,7 @@ class Vatchecker extends Module
 			$countryCode = Country::getIsoById( $countryCode );
 		}
 
-		if ( ! in_array( $countryCode, $this->EUCountries ) ) {
+		if ( ! $this->isEUCountry( $countryCode ) ) {
 			return $this->l('Please select an EU country');
 		}
 
@@ -369,5 +369,14 @@ class Vatchecker extends Module
 			}
 			return $this->l( 'EU VIES server not responding' );
 		}
+	}
+
+	public function isEUCountry( $countryCode ) {
+
+		if ( is_numeric( $countryCode ) ) {
+			$countryCode = Country::getIsoById( $countryCode );
+		}
+
+		return in_array( $countryCode, $this->EUCountries );
 	}
 }
