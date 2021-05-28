@@ -332,16 +332,17 @@ class Vatchecker extends Module
 		}
 
 		$is_origin_country = ( Configuration::get('VATCHECKER_ORIGIN_COUNTRY') === $id_country );
-		$group             = Configuration::get('VATCHECKER_NO_TAX_GROUP');
 
 		if ( true === $is_valid ) {
 
-			if ( ! $is_origin_country && $group ) {
+			if ( ! $is_origin_country ) {
 				// If all is correct, put the customer in the group.
-				$this->context->customer->addGroups( array( (int) $group ) );
+				$this->addNoTaxGroup( $this->context->customer );
+			} else {
+				$this->removeNoTaxGroup( $this->context->customer );
 			}
 		} else {
-			// @todo Remove from group.
+			$this->removeNoTaxGroup( $this->context->customer );
 
 			if ( Configuration::get('VATCHECKER_REQUIRED') ) {
 				$form->getField('vat_number')->addError( $is_valid );
@@ -404,5 +405,29 @@ class Vatchecker extends Module
 		}
 
 		return in_array( $countryCode, $this->EUCountries );
+	}
+
+	public function addNoTaxGroup( $customer ) {
+		$group = Configuration::get('VATCHECKER_NO_TAX_GROUP');
+		if ( ! $group ) {
+			return;
+		}
+
+		$customer->addGroups( array( (int) $group ) );
+	}
+
+	public function removeNoTaxGroup( $customer ) {
+		$group = Configuration::get('VATCHECKER_NO_TAX_GROUP');
+		if ( ! $group ) {
+			return;
+		}
+
+		// Remove from group.
+		$groups = $customer->getGroups();
+		$groups = array_diff( $groups, array( (int) $group ) );
+		if ( empty( $groups ) ) {
+			$groups = array( Configuration::get( 'PS_CUSTOMER_GROUP' ) );
+		}
+		$customer->updateGroup( $groups );
 	}
 }
