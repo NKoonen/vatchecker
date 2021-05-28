@@ -28,15 +28,43 @@
 
 jQuery( function( $ ) {
 
+	var $document = $(document),
+		checked   = {};
+
 	vatchecker.validate = function( vat_number, id_country, $elem ) {
-		$elem.removeClass( 'validated error text-danger text-success' ).css( { 'opacity': '0.5' } );
-		$elem.next( '.vat-error' ).remove();
+		$elem.removeClass( 'validated error text-danger text-success' );
+		$elem.next( '.vat-result' ).remove();
+		$elem.after( '<p class="vat-result small"></p>' );
+		$result = $elem.next( '.vat-result' );
+
+		// Minimal VAT number length is 8 digits.
+		// https://en.wikipedia.org/wiki/VAT_identification_number
+		if ( ! vat_number || vat_number.length < 8 ) {
+			return;
+		}
+
+		var $result          = $elem.next( '.vat-result' ),
+			loading          = '. . . ',
+			loading_interval = setInterval( function() {
+			if ( 20 < loading.length ) {
+				loading = '. . . ';
+			}
+			loading += '. ';
+			$result.html( loading );
+		}, 500 );
+
+		if ( checked.hasOwnProperty( vat_number ) ) {
+			success( checked[ vat_number ] );
+			return;
+		}
+
+		$elem.css( { 'opacity': '0.5' } );
 
 		$.ajax( {
 			type: 'POST',
 			url: vatchecker.ajax_url,
 			headers: {"cache-control": "no-cache"},
-			async: false,
+			//async: false,
 			data: {
 				vatchecker: vatchecker.token,
 				vat_number: vat_number,
@@ -44,39 +72,62 @@ jQuery( function( $ ) {
 			},
 			dataType: 'json',
 			success: function ( resp ) {
-				if ( resp.hasOwnProperty( 'valid' ) ) {
-					// Check successful.
-					if ( true === resp.valid ) {
-						// Valid VAT
-						$elem.addClass( 'validated text-success' );
-					} else {
-						$elem.addClass( 'error text-danger' );
-						if ( resp.hasOwnProperty( 'error' ) && resp.error ) {
-							// Error message.
-							$elem.after( '<p class="vat-error small text-danger">' + resp.error + '</p>' );
-						}
-					}
-				} else {
-					// Fail
-					$elem.addClass( 'error text-danger' );
-				}
+				success( resp );
 			}
 		} ).always( function() {
+			clearInterval( loading_interval );
 			$elem.css( { 'opacity': '' } );
 		} ).fail( function( resp ) {
+			clearInterval( loading_interval );
+			$result.html('');
 			$elem.addClass( 'error text-danger' );
 		} );
+
+		function success( resp ) {
+
+			clearInterval( loading_interval );
+			$result.html('');
+			if ( resp.hasOwnProperty( 'valid' ) ) {
+				// Check successful.
+				if ( true === resp.valid ) {
+					// Valid VAT
+					$elem.addClass( 'validated text-success' );
+
+					checked[ vat_number ] = resp;
+				} else if ( false === resp.valid ) {
+					$elem.addClass( 'error text-danger' );
+					if ( resp.hasOwnProperty( 'error' ) && resp.error ) {
+						// Error message.
+						$result.addClass( 'text-danger' ).html( resp.error );
+					}
+				} else {
+					$elem.removeClass( 'validated error text-danger text-success' );
+				}
+			} else {
+				// Fail
+				$elem.addClass( 'error text-danger' );
+			}
+		}
 	};
 
-	$(document).on( 'blur', '[name="vat_number"]', function () {
-		var $this = $( this ),
-			$form = $this.parents( 'form' ),
-			$country = $form.find('[name="id_country"]');
+	$document.on( 'blur', '[name="vat_number"]', function () {
+		var $vat     = $( this ),
+			$form    = $vat.parents( 'form' ),
+			$country = $form.find('[name="id_country"]'),
 
-		// Remove invalid characters.
-		$this.val( $this.val().toUpperCase().replace( /[^A-Z0-9]/gi, '' ) );
+			// Remove invalid characters.
+			val = $vat.val().toUpperCase().replace( /[^A-Z0-9]/gi, '' );
 
-		vatchecker.validate( $( this ).val(), $country.val(), $this );
+		$vat.val( val );
+		vatchecker.validate( $( this ).val(), $country.val(), $vat );
+	} );
+
+	$document.on( 'change', '[name="id_country"]', function() {
+		var $country = $( this ),
+			$form    = $country.parents( 'form' ),
+			$vat     = $form.find('[name="vat_number"]');
+
+		vatchecker.validate( $vat.val(), $country.val(), $vat );
 	} );
 
 } );

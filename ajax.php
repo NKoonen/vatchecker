@@ -13,10 +13,19 @@ $vat     = Tools::getValue('vat_number');
 $country = Tools::getValue('id_country');
 
 $is_valid = $vatchecker->checkVat( $vat, $country );
+$is_eu    = $vatchecker->isEUCountry( $country );
+
+$error = ( true !== $is_valid ) ? $is_valid : '';
+$valid = ( true === $is_valid );
+
+if ( ! $vatchecker->isEUCountry( $country ) ) {
+	$valid = null;
+}
 
 $return = array(
-	'valid' => ( true === $is_valid ),
-	'error' => ( true !== $is_valid ) ? $is_valid : '',
+	'valid' => $valid,
+	'error' => $error,
+	'is_eu' => $is_eu,
 );
 
 echo json_encode( $return );

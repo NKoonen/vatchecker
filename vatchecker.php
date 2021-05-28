@@ -93,6 +93,7 @@ class Vatchecker extends Module
 	public function install()
 	{
 		Configuration::updateValue('VATCHECKER_LIVE_MODE', true);
+		Configuration::updateValue('VATCHECKER_REQUIRED', true);
 		Configuration::updateValue('VATCHECKER_ALLOW_OFFLINE', true);
 
 		return parent::install() &&
@@ -104,6 +105,7 @@ class Vatchecker extends Module
 	public function uninstall()
 	{
 		Configuration::deleteByName('VATCHECKER_LIVE_MODE');
+		Configuration::deleteByName('VATCHECKER_REQUIRED');
 		Configuration::deleteByName('VATCHECKER_ALLOW_OFFLINE');
 
 		return parent::uninstall();
@@ -163,6 +165,7 @@ class Vatchecker extends Module
 	{
 		return array(
 			'VATCHECKER_LIVE_MODE'      => Configuration::get('VATCHECKER_LIVE_MODE', true),
+			'VATCHECKER_REQUIRED'       => Configuration::get('VATCHECKER_REQUIRED', true),
 			'VATCHECKER_ALLOW_OFFLINE'  => Configuration::get('VATCHECKER_ALLOW_OFFLINE', true),
 			'VATCHECKER_ORIGIN_COUNTRY' => Configuration::get('VATCHECKER_ORIGIN_COUNTRY', '0'),
 			'VATCHECKER_NO_TAX_GROUP'   => Configuration::get('VATCHECKER_NO_TAX_GROUP', null),
@@ -244,6 +247,25 @@ class Vatchecker extends Module
 					),
 					array(
 						'type' => 'switch',
+						'label' => $this->l('Validation required'),
+						'name' => 'VATCHECKER_REQUIRED',
+						'is_bool' => true,
+						'desc' => $this->l('Require valid VAT numbers for EU countries (VIES).'),
+						'values' => array(
+							array(
+								'id' => 'required_enabled',
+								'value' => true,
+								'label' => $this->l('Enabled'),
+							),
+							array(
+								'id' => 'required_disabled',
+								'value' => false,
+								'label' => $this->l('Disabled'),
+							),
+						),
+					),
+					array(
+						'type' => 'switch',
 						'label' => $this->l('Offline validation'),
 						'name' => 'VATCHECKER_ALLOW_OFFLINE',
 						'is_bool' => true,
@@ -304,27 +326,32 @@ class Vatchecker extends Module
 
 		$is_valid = $this->checkVat( $vatNumber, $id_country );
 
+		if ( null === $is_valid ) {
+			// Module inactive.
+			return true;
+		}
+
+		$is_origin_country = ( Configuration::get('VATCHECKER_ORIGIN_COUNTRY') === $id_country );
+
 		if ( true === $is_valid ) {
 
-			$is_origin_country = ( Configuration::get('VATCHECKER_ORIGIN_COUNTRY') === $id_country );
-			$group             = Configuration::get('VATCHECKER_NO_TAX_GROUP');
-
-			if ( ! $is_origin_country && $group ) {
-				// If all is correct, put the customer in the group.
-				$this->context->customer->addGroups( array( (int) $group ) );
+			if ( ! $is_origin_country ) {
+				// If all is correct, put the customer in the no TAX group.
+				$this->addNoTaxGroup( $this->context->customer );
+			} else {
+				$this->removeNoTaxGroup( $this->context->customer );
 			}
 		} else {
-			// @todo Remove from group.
-			if ( null === $is_valid ) {
-				// VAT number
-				$is_valid = true;
-			} else {
+			$this->removeNoTaxGroup( $this->context->customer );
+
+			if ( Configuration::get('VATCHECKER_REQUIRED') ) {
 				$form->getField('vat_number')->addError( $is_valid );
+				return false;
 			}
 		}
 
-		return $is_valid;
-
+		// @todo Remove from group.
+		return true;
 	}
 
 	public function checkVat( $vatNumber, $countryCode = null ) {
@@ -337,7 +364,7 @@ class Vatchecker extends Module
 			$countryCode = Country::getIsoById( $countryCode );
 		}
 
-		if ( ! in_array( $countryCode, $this->EUCountries ) ) {
+		if ( ! $this->isEUCountry( $countryCode ) ) {
 			return $this->l('Please select an EU country');
 		}
 
@@ -358,7 +385,7 @@ class Vatchecker extends Module
 
 			$result = $client->__soapCall('checkVat', array($params));
 
-			if ($result->valid === true) {
+			if ( $result->valid === true ) {
 				return true;
 			}
 			return $this->l('This is not a valid VAT number');
@@ -369,5 +396,38 @@ class Vatchecker extends Module
 			}
 			return $this->l( 'EU VIES server not responding' );
 		}
+	}
+
+	public function isEUCountry( $countryCode ) {
+
+		if ( is_numeric( $countryCode ) ) {
+			$countryCode = Country::getIsoById( $countryCode );
+		}
+
+		return in_array( $countryCode, $this->EUCountries );
+	}
+
+	public function addNoTaxGroup( $customer ) {
+		$group = Configuration::get('VATCHECKER_NO_TAX_GROUP');
+		if ( ! $group ) {
+			return;
+		}
+
+		$customer->addGroups( array( (int) $group ) );
+	}
+
+	public function removeNoTaxGroup( $customer ) {
+		$group = Configuration::get('VATCHECKER_NO_TAX_GROUP');
+		if ( ! $group ) {
+			return;
+		}
+
+		// Remove from group.
+		$groups = $customer->getGroups();
+		$groups = array_diff( $groups, array( (int) $group ) );
+		if ( empty( $groups ) ) {
+			$groups = array( Configuration::get( 'PS_CUSTOMER_GROUP' ) );
+		}
+		$customer->updateGroup( $groups );
 	}
 }
