@@ -29,8 +29,27 @@
 jQuery( function( $ ) {
 
 	vatchecker.validate = function( vat_number, id_country, $elem ) {
-		$elem.removeClass( 'validated error text-danger text-success' ).css( { 'opacity': '0.5' } );
-		$elem.next( '.vat-error' ).remove();
+		$elem.removeClass( 'validated error text-danger text-success' );
+		$elem.next( '.vat-result' ).remove();
+		$elem.after( '<p class="vat-result small"></p>' );
+
+		// Minimal VAT number length is 8 digits.
+		// https://en.wikipedia.org/wiki/VAT_identification_number
+		if ( ! vat_number || vat_number.length < 8 ) {
+			return;
+		}
+
+		var $result          = $elem.next( '.vat-result' ).html( '. . . ' ),
+			loading          = '. . . ',
+			loading_interval = setInterval( function() {
+			if ( 20 < loading.length ) {
+				loading = '. . . ';
+			}
+			loading += '. ';
+			$result.html( loading );
+		}, 500 );
+
+		$elem.css( { 'opacity': '0.5' } );
 
 		$.ajax( {
 			type: 'POST',
@@ -44,6 +63,8 @@ jQuery( function( $ ) {
 			},
 			dataType: 'json',
 			success: function ( resp ) {
+				clearInterval( loading_interval );
+				$result.html('');
 				if ( resp.hasOwnProperty( 'valid' ) ) {
 					// Check successful.
 					if ( true === resp.valid ) {
@@ -53,7 +74,7 @@ jQuery( function( $ ) {
 						$elem.addClass( 'error text-danger' );
 						if ( resp.hasOwnProperty( 'error' ) && resp.error ) {
 							// Error message.
-							$elem.after( '<p class="vat-error small text-danger">' + resp.error + '</p>' );
+							$result.addClass( 'text-danger' ).html( resp.error );
 						}
 					}
 				} else {
@@ -62,8 +83,11 @@ jQuery( function( $ ) {
 				}
 			}
 		} ).always( function() {
+			clearInterval( loading_interval );
 			$elem.css( { 'opacity': '' } );
 		} ).fail( function( resp ) {
+			clearInterval( loading_interval );
+			$result.html('');
 			$elem.addClass( 'error text-danger' );
 		} );
 	};
