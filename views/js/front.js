@@ -28,12 +28,14 @@
 
 jQuery( function( $ ) {
 
-	var $document = $(document);
+	var $document = $(document),
+		checked   = {};
 
 	vatchecker.validate = function( vat_number, id_country, $elem ) {
 		$elem.removeClass( 'validated error text-danger text-success' );
 		$elem.next( '.vat-result' ).remove();
 		$elem.after( '<p class="vat-result small"></p>' );
+		$result = $elem.next( '.vat-result' );
 
 		// Minimal VAT number length is 8 digits.
 		// https://en.wikipedia.org/wiki/VAT_identification_number
@@ -41,7 +43,7 @@ jQuery( function( $ ) {
 			return;
 		}
 
-		var $result          = $elem.next( '.vat-result' ).html( '. . . ' ),
+		var $result          = $elem.next( '.vat-result' ),
 			loading          = '. . . ',
 			loading_interval = setInterval( function() {
 			if ( 20 < loading.length ) {
@@ -50,6 +52,11 @@ jQuery( function( $ ) {
 			loading += '. ';
 			$result.html( loading );
 		}, 500 );
+
+		if ( checked.hasOwnProperty( vat_number ) ) {
+			success( checked[ vat_number ] );
+			return;
+		}
 
 		$elem.css( { 'opacity': '0.5' } );
 
@@ -65,26 +72,7 @@ jQuery( function( $ ) {
 			},
 			dataType: 'json',
 			success: function ( resp ) {
-				clearInterval( loading_interval );
-				$result.html('');
-				if ( resp.hasOwnProperty( 'valid' ) ) {
-					// Check successful.
-					if ( true === resp.valid ) {
-						// Valid VAT
-						$elem.addClass( 'validated text-success' );
-					} else if ( false === resp.valid ) {
-						$elem.addClass( 'error text-danger' );
-						if ( resp.hasOwnProperty( 'error' ) && resp.error ) {
-							// Error message.
-							$result.addClass( 'text-danger' ).html( resp.error );
-						}
-					} else {
-						$elem.removeClass( 'validated error text-danger text-success' );
-					}
-				} else {
-					// Fail
-					$elem.addClass( 'error text-danger' );
-				}
+				success( resp );
 			}
 		} ).always( function() {
 			clearInterval( loading_interval );
@@ -94,6 +82,32 @@ jQuery( function( $ ) {
 			$result.html('');
 			$elem.addClass( 'error text-danger' );
 		} );
+
+		function success( resp ) {
+
+			clearInterval( loading_interval );
+			$result.html('');
+			if ( resp.hasOwnProperty( 'valid' ) ) {
+				// Check successful.
+				if ( true === resp.valid ) {
+					// Valid VAT
+					$elem.addClass( 'validated text-success' );
+
+					checked[ vat_number ] = resp;
+				} else if ( false === resp.valid ) {
+					$elem.addClass( 'error text-danger' );
+					if ( resp.hasOwnProperty( 'error' ) && resp.error ) {
+						// Error message.
+						$result.addClass( 'text-danger' ).html( resp.error );
+					}
+				} else {
+					$elem.removeClass( 'validated error text-danger text-success' );
+				}
+			} else {
+				// Fail
+				$elem.addClass( 'error text-danger' );
+			}
+		}
 	};
 
 	$document.on( 'blur', '[name="vat_number"]', function () {
