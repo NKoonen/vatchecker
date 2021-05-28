@@ -380,7 +380,7 @@ class Vatchecker extends Module
 
 			$result = $client->__soapCall('checkVat', array($params));
 
-			if ($result->valid === true) {
+			if ( $result->valid === true ) {
 				return true;
 			}
 			return $this->l('This is not a valid VAT number');
