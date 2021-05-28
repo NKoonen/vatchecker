@@ -28,6 +28,8 @@
 
 jQuery( function( $ ) {
 
+	var $document = $(document);
+
 	vatchecker.validate = function( vat_number, id_country, $elem ) {
 		$elem.removeClass( 'validated error text-danger text-success' );
 		$elem.next( '.vat-result' ).remove();
@@ -92,15 +94,24 @@ jQuery( function( $ ) {
 		} );
 	};
 
-	$(document).on( 'blur', '[name="vat_number"]', function () {
-		var $this = $( this ),
-			$form = $this.parents( 'form' ),
-			$country = $form.find('[name="id_country"]');
+	$document.on( 'blur', '[name="vat_number"]', function () {
+		var $vat     = $( this ),
+			$form    = $vat.parents( 'form' ),
+			$country = $form.find('[name="id_country"]'),
 
-		// Remove invalid characters.
-		$this.val( $this.val().toUpperCase().replace( /[^A-Z0-9]/gi, '' ) );
+			// Remove invalid characters.
+			val = $vat.val().toUpperCase().replace( /[^A-Z0-9]/gi, '' );
 
-		vatchecker.validate( $( this ).val(), $country.val(), $this );
+		$vat.val( val );
+		vatchecker.validate( $( this ).val(), $country.val(), $vat );
+	} );
+
+	$document.on( 'change', '[name="id_country"]', function() {
+		var $country = $( this ),
+			$form    = $country.parents( 'form' ),
+			$vat     = $form.find('[name="vat_number"]');
+
+		vatchecker.validate( $vat.val(), $country.val(), $vat );
 	} );
 
 } );
