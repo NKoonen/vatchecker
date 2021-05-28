@@ -336,7 +336,7 @@ class Vatchecker extends Module
 		if ( true === $is_valid ) {
 
 			if ( ! $is_origin_country ) {
-				// If all is correct, put the customer in the group.
+				// If all is correct, put the customer in the no TAX group.
 				$this->addNoTaxGroup( $this->context->customer );
 			} else {
 				$this->removeNoTaxGroup( $this->context->customer );
