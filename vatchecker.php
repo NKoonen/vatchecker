@@ -244,6 +244,25 @@ class Vatchecker extends Module
 					),
 					array(
 						'type' => 'switch',
+						'label' => $this->l('Validation required'),
+						'name' => 'VATCHECKER_REQUIRED',
+						'is_bool' => true,
+						'desc' => $this->l('Require valid VAT numbers for EU countries (VIES).'),
+						'values' => array(
+							array(
+								'id' => 'required_enabled',
+								'value' => true,
+								'label' => $this->l('Enabled'),
+							),
+							array(
+								'id' => 'required_disabled',
+								'value' => false,
+								'label' => $this->l('Disabled'),
+							),
+						),
+					),
+					array(
+						'type' => 'switch',
 						'label' => $this->l('Offline validation'),
 						'name' => 'VATCHECKER_ALLOW_OFFLINE',
 						'is_bool' => true,
@@ -323,8 +342,11 @@ class Vatchecker extends Module
 			$form->getField('vat_number')->addError( $is_valid );
 		}
 
-		return $is_valid;
-
+		if ( Configuration::get('VATCHECKER_REQUIRED') ) {
+			return $is_valid;
+		}
+		// @todo Remove from group.
+		return true;
 	}
 
 	public function checkVat( $vatNumber, $countryCode = null ) {
