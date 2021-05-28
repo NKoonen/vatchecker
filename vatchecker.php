@@ -304,6 +304,11 @@ class Vatchecker extends Module
 
 		$is_valid = $this->checkVat( $vatNumber, $id_country );
 
+		if ( null === $is_valid ) {
+			// Module inactive.
+			return true;
+		}
+
 		if ( true === $is_valid ) {
 
 			$is_origin_country = ( Configuration::get('VATCHECKER_ORIGIN_COUNTRY') === $id_country );
@@ -315,12 +320,7 @@ class Vatchecker extends Module
 			}
 		} else {
 			// @todo Remove from group.
-			if ( null === $is_valid ) {
-				// VAT number
-				$is_valid = true;
-			} else {
-				$form->getField('vat_number')->addError( $is_valid );
-			}
+			$form->getField('vat_number')->addError( $is_valid );
 		}
 
 		return $is_valid;
