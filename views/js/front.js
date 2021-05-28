@@ -72,12 +72,14 @@ jQuery( function( $ ) {
 					if ( true === resp.valid ) {
 						// Valid VAT
 						$elem.addClass( 'validated text-success' );
-					} else {
+					} else if ( false === resp.valid ) {
 						$elem.addClass( 'error text-danger' );
 						if ( resp.hasOwnProperty( 'error' ) && resp.error ) {
 							// Error message.
 							$result.addClass( 'text-danger' ).html( resp.error );
 						}
+					} else {
+						$elem.removeClass( 'validated error text-danger text-success' );
 					}
 				} else {
 					// Fail
