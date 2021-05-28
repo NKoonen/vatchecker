@@ -55,7 +55,7 @@ jQuery( function( $ ) {
 			type: 'POST',
 			url: vatchecker.ajax_url,
 			headers: {"cache-control": "no-cache"},
-			async: false,
+			//async: false,
 			data: {
 				vatchecker: vatchecker.token,
 				vat_number: vat_number,
