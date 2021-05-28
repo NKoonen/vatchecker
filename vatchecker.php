@@ -93,6 +93,7 @@ class Vatchecker extends Module
 	public function install()
 	{
 		Configuration::updateValue('VATCHECKER_LIVE_MODE', true);
+		Configuration::updateValue('VATCHECKER_REQUIRED', true);
 		Configuration::updateValue('VATCHECKER_ALLOW_OFFLINE', true);
 
 		return parent::install() &&
@@ -104,6 +105,7 @@ class Vatchecker extends Module
 	public function uninstall()
 	{
 		Configuration::deleteByName('VATCHECKER_LIVE_MODE');
+		Configuration::deleteByName('VATCHECKER_REQUIRED');
 		Configuration::deleteByName('VATCHECKER_ALLOW_OFFLINE');
 
 		return parent::uninstall();
@@ -163,6 +165,7 @@ class Vatchecker extends Module
 	{
 		return array(
 			'VATCHECKER_LIVE_MODE'      => Configuration::get('VATCHECKER_LIVE_MODE', true),
+			'VATCHECKER_REQUIRED'       => Configuration::get('VATCHECKER_REQUIRED', true),
 			'VATCHECKER_ALLOW_OFFLINE'  => Configuration::get('VATCHECKER_ALLOW_OFFLINE', true),
 			'VATCHECKER_ORIGIN_COUNTRY' => Configuration::get('VATCHECKER_ORIGIN_COUNTRY', '0'),
 			'VATCHECKER_NO_TAX_GROUP'   => Configuration::get('VATCHECKER_NO_TAX_GROUP', null),
@@ -328,10 +331,10 @@ class Vatchecker extends Module
 			return true;
 		}
 
-		if ( true === $is_valid ) {
+		$is_origin_country = ( Configuration::get('VATCHECKER_ORIGIN_COUNTRY') === $id_country );
+		$group             = Configuration::get('VATCHECKER_NO_TAX_GROUP');
 
-			$is_origin_country = ( Configuration::get('VATCHECKER_ORIGIN_COUNTRY') === $id_country );
-			$group             = Configuration::get('VATCHECKER_NO_TAX_GROUP');
+		if ( true === $is_valid ) {
 
 			if ( ! $is_origin_country && $group ) {
 				// If all is correct, put the customer in the group.
@@ -339,12 +342,13 @@ class Vatchecker extends Module
 			}
 		} else {
 			// @todo Remove from group.
-			$form->getField('vat_number')->addError( $is_valid );
+
+			if ( Configuration::get('VATCHECKER_REQUIRED') ) {
+				$form->getField('vat_number')->addError( $is_valid );
+				return false;
+			}
 		}
 
-		if ( Configuration::get('VATCHECKER_REQUIRED') ) {
-			return $is_valid;
-		}
 		// @todo Remove from group.
 		return true;
 	}
