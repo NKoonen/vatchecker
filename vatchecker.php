@@ -45,7 +45,7 @@ class Vatchecker extends Module
 		'ES',
 		'FI',
 		'FR',
-		'GB',
+		//'GB', // Brexit!
 		'HR',
 		'HU',
 		'IE',
