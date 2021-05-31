@@ -220,8 +220,8 @@ class Vatchecker extends Module
 
 		$helper->tpl_vars = array(
 			'fields_value' => $this->getConfigFormValues(), /* Add values for your inputs */
-			'languages' => $this->context->controller->getLanguages(),
-			'id_language' => $this->context->language->id,
+			'languages'    => $this->context->controller->getLanguages(),
+			'id_language'  => $this->context->language->id,
 		);
 
 		return $helper->generateForm(array($this->getConfigForm()));
@@ -235,7 +235,7 @@ class Vatchecker extends Module
 		$countries = Country::getCountries($this->context->language->id);
 		$select_country = array(
 			0 => array(
-				'id' => 0,
+				'id'   => 0,
 				'name' => $this->l('- Select a country -'),
 			),
 		);
@@ -250,76 +250,76 @@ class Vatchecker extends Module
 			'form' => array(
 				'legend' => array(
 					'title' => $this->l('Settings'),
-					'icon' => 'icon-cogs',
+					'icon'  => 'icon-cogs',
 				),
 				'input' => array(
 					array(
-						'type' => 'switch',
-						'label' => $this->l('Activate module'),
-						'name' => 'VATCHECKER_LIVE_MODE',
+						'type'    => 'switch',
+						'label'   => $this->l('Activate module'),
+						'name'    => 'VATCHECKER_LIVE_MODE',
 						'is_bool' => true,
-						'desc' => $this->l('Use this module currently active'),
-						'values' => array(
+						'desc'    => $this->l('Use this module currently active'),
+						'values'  => array(
 							array(
-								'id' => 'active_on',
+								'id'    => 'active_on',
 								'value' => true,
 								'label' => $this->l('Enabled'),
 							),
 							array(
-								'id' => 'active_off',
+								'id'    => 'active_off',
 								'value' => false,
 								'label' => $this->l('Disabled'),
 							),
 						),
 					),
 					array(
-						'type' => 'switch',
-						'label' => $this->l('Validation required'),
-						'name' => 'VATCHECKER_REQUIRED',
+						'type'    => 'switch',
+						'label'   => $this->l('Validation required'),
+						'name'    => 'VATCHECKER_REQUIRED',
 						'is_bool' => true,
-						'desc' => $this->l('Require valid VAT numbers for EU countries (VIES).'),
-						'values' => array(
+						'desc'    => $this->l('Require valid VAT numbers for EU countries (VIES).'),
+						'values'  => array(
 							array(
-								'id' => 'required_enabled',
+								'id'    => 'required_enabled',
 								'value' => true,
 								'label' => $this->l('Enabled'),
 							),
 							array(
-								'id' => 'required_disabled',
+								'id'    => 'required_disabled',
 								'value' => false,
 								'label' => $this->l('Disabled'),
 							),
 						),
 					),
 					array(
-						'type' => 'switch',
-						'label' => $this->l('Offline validation'),
-						'name' => 'VATCHECKER_ALLOW_OFFLINE',
+						'type'    => 'switch',
+						'label'   => $this->l('Offline validation'),
+						'name'    => 'VATCHECKER_ALLOW_OFFLINE',
 						'is_bool' => true,
-						'desc' => $this->l('Accept VAT numbers if the VIES validation service is offline'),
-						'values' => array(
+						'desc'    => $this->l('Accept VAT numbers if the VIES validation service is offline'),
+						'values'  => array(
 							array(
-								'id' => 'offline_enabled',
+								'id'    => 'offline_enabled',
 								'value' => true,
 								'label' => $this->l('Enabled'),
 							),
 							array(
-								'id' => 'offline_disabled',
+								'id'    => 'offline_disabled',
 								'value' => false,
 								'label' => $this->l('Disabled'),
 							),
 						),
 					),
 					array(
-						'col' => 3,
-						'type' => 'select',
-						'desc' => $this->l('Select shops country'),
-						'name' => 'VATCHECKER_ORIGIN_COUNTRY',
-						'label' => $this->l('Origin'),
+						'col'     => 3,
+						'type'    => 'select',
+						'desc'    => $this->l('Select shops country'),
+						'name'    => 'VATCHECKER_ORIGIN_COUNTRY',
+						'label'   => $this->l('Origin'),
 						'options' => array(
 							'query' => array_merge( $select_country, $cntylist ),
-							'id' => 'id',
-							'name' => 'name',
+							'id'    => 'id',
+							'name'  => 'name',
 						),
 					),
 					array(
@@ -331,19 +331,20 @@ class Vatchecker extends Module
 						'multiple' => true,
 						'values'   => array(
 							'query' => $cntylist,
-							'id' => 'id',
-							'name' => 'name',
+							'id'    => 'id',
+							'name'  => 'name',
+							'value' => 'id',
 						),
 					),
 					array(
-						'type' => 'select',
-						'name' => 'VATCHECKER_NO_TAX_GROUP',
-						'label' => $this->l('Valid VAT Group'),
-						'desc' => $this->l('Customers with valid VAT number will be place in this group.'),
+						'type'    => 'select',
+						'name'    => 'VATCHECKER_NO_TAX_GROUP',
+						'label'   => $this->l('Valid VAT Group'),
+						'desc'    => $this->l('Customers with valid VAT number will be place in this group.'),
 						'options' => array(
-							'query' => Group::getGroups(Context::getContext()->language->id, true),
-							'id' => 'id_group',
-							'name'=>'name',
+							'query'   => Group::getGroups(Context::getContext()->language->id, true),
+							'id'      => 'id_group',
+							'name'    =>'name',
 							'default' => array(
 								'value' => '',
 								'label' => $this->l('Select Group')
@@ -384,7 +385,7 @@ class Vatchecker extends Module
 
 	public function checkVat( $vatNumber, $countryCode = null ) {
 
-		if ( ! Configuration::get('VATCHECKER_LIVE_MODE', true ) ) {
+		if ( ! Configuration::get( 'VATCHECKER_LIVE_MODE' ) ) {
 			return null;
 		}
 
@@ -419,7 +420,7 @@ class Vatchecker extends Module
 			return $this->l('This is not a valid VAT number');
 
 		} catch ( Throwable $e ) {
-			if ( Configuration::get('VATCHECKER_ALLOW_OFFLINE', true ) ) {
+			if ( Configuration::get( 'VATCHECKER_ALLOW_OFFLINE' ) ) {
 				return true;
 			}
 			return $this->l( 'EU VIES server not responding' );
