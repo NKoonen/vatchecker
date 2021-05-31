@@ -95,6 +95,9 @@ class Vatchecker extends Module
 		Configuration::updateValue('VATCHECKER_LIVE_MODE', true);
 		Configuration::updateValue('VATCHECKER_REQUIRED', true);
 		Configuration::updateValue('VATCHECKER_ALLOW_OFFLINE', true);
+		//Configuration::updateValue('VATCHECKER_EU_COUNTRIES', null );
+		//Configuration::updateValue('VATCHECKER_ORIGIN_COUNTRY', null);
+		//Configuration::updateValue('VATCHECKER_NO_TAX_GROUP', null);
 
 		return parent::install() &&
 			$this->registerHook('displayHeader') &&
@@ -107,6 +110,9 @@ class Vatchecker extends Module
 		Configuration::deleteByName('VATCHECKER_LIVE_MODE');
 		Configuration::deleteByName('VATCHECKER_REQUIRED');
 		Configuration::deleteByName('VATCHECKER_ALLOW_OFFLINE');
+		Configuration::deleteByName('VATCHECKER_ORIGIN_COUNTRY');
+		Configuration::deleteByName('VATCHECKER_EU_COUNTRIES');
+		Configuration::deleteByName('VATCHECKER_NO_TAX_GROUP');
 
 		return parent::uninstall();
 	}
