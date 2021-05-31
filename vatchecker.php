@@ -160,6 +160,9 @@ class Vatchecker extends Module
 		$form_values = $this->getConfigFormValues();
 
 		foreach (array_keys($form_values) as $key) {
+			if ( false !== strpos( $key, 'VATCHECKER_EU_COUNTRIES' ) ) {
+				continue;
+			}
 			Configuration::updateValue($key, Tools::getValue($key));
 		}
 
