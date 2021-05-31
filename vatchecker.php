@@ -327,33 +327,21 @@ class Vatchecker extends Module
 	public function hookActionValidateCustomerAddressForm(&$params)
 	{
 		$form       = $params['form'];
-		$id_country = $form->getField('id_country')->getValue();
+		$countryId  = $form->getField('id_country')->getValue();
 		$vatNumber  = $form->getField('vat_number')->getValue();
 
-		$is_valid = $this->checkVat( $vatNumber, $id_country );
+		$vatValid = $this->checkVat( $vatNumber, $countryId );
 
-		if ( null === $is_valid ) {
+		if ( null === $vatValid ) {
 			// Module inactive.
 			return true;
 		}
 
-		$is_origin_country = ( Configuration::get('VATCHECKER_ORIGIN_COUNTRY') === $id_country );
+		$this->updateNoTaxGroup( $vatValid, $countryId, $this->context->customer );
 
-		if ( true === $is_valid ) {
-
-			if ( ! $is_origin_country ) {
-				// If all is correct, put the customer in the no TAX group.
-				$this->addNoTaxGroup( $this->context->customer );
-			} else {
-				$this->removeNoTaxGroup( $this->context->customer );
-			}
-		} else {
-			$this->removeNoTaxGroup( $this->context->customer );
-
-			if ( Configuration::get('VATCHECKER_REQUIRED') ) {
-				$form->getField('vat_number')->addError( $is_valid );
-				return false;
-			}
+		if ( true !== $vatValid && Configuration::get( 'VATCHECKER_REQUIRED' ) ) {
+			$form->getField('vat_number')->addError( $vatValid );
+			return false;
 		}
 
 		// @todo Remove from group.
@@ -410,11 +398,31 @@ class Vatchecker extends Module
 			$countryCode = Country::getIsoById( $countryCode );
 		}
 
-		return in_array( $countryCode, $this->EUCountries );
+		return in_array( $countryCode, $this->getEUCountries() );
+	}
+
+	public function updateNoTaxGroup( $vatValid, $countryId, $customer = null ) {
+		if ( ! $customer ) {
+			$customer = $this->context->customer;
+		}
+
+		$is_origin_country = ( (int) Configuration::get( 'VATCHECKER_ORIGIN_COUNTRY' ) === (int) $countryId );
+
+		if ( true === $vatValid ) {
+
+			if ( ! $is_origin_country ) {
+				// If all is correct, put the customer in the no TAX group.
+				$this->addNoTaxGroup( $customer );
+			} else {
+				$this->removeNoTaxGroup( $customer );
+			}
+		} else {
+			$this->removeNoTaxGroup( $customer );
+		}
 	}
 
 	public function addNoTaxGroup( $customer ) {
-		$group = Configuration::get('VATCHECKER_NO_TAX_GROUP');
+		$group = Configuration::get( 'VATCHECKER_NO_TAX_GROUP' );
 		if ( ! $group ) {
 			return;
 		}
