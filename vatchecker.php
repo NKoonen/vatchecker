@@ -241,8 +241,8 @@ class Vatchecker extends Module
 		);
 		foreach ($countries as $country) {
 			$cntylist[] = array(
-				'id' => $country['id_country'],
-				'name' => $country['name'],
+				'id'    => $country['id_country'],
+				'name'  => $country['name'] . ' (' . $country['iso_code'] . ')',
 			);
 		}
 
