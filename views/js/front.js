@@ -34,7 +34,7 @@ jQuery( function( $ ) {
 	vatchecker.validate = function( vat_number, id_country, $elem ) {
 		$elem.removeClass( 'validated error text-danger text-success' );
 		$elem.next( '.vat-result' ).remove();
-		$elem.after( '<p class="vat-result small"></p>' );
+		$elem.after( '<div class="vat-result small"></div>' );
 		$result = $elem.next( '.vat-result' );
 
 		// Minimal VAT number length is 8 digits.
@@ -79,7 +79,7 @@ jQuery( function( $ ) {
 			$elem.css( { 'opacity': '' } );
 		} ).fail( function( resp ) {
 			clearInterval( loading_interval );
-			$result.html('');
+			$result.remove();
 			$elem.addClass( 'error text-danger' );
 		} );
 
@@ -92,6 +92,7 @@ jQuery( function( $ ) {
 				if ( true === resp.valid ) {
 					// Valid VAT
 					$elem.addClass( 'validated text-success' );
+					$result.remove();
 
 					checked[ vat_number ] = resp;
 				} else if ( false === resp.valid ) {
@@ -102,10 +103,12 @@ jQuery( function( $ ) {
 					}
 				} else {
 					$elem.removeClass( 'validated error text-danger text-success' );
+					$result.remove();
 				}
 			} else {
 				// Fail
 				$elem.addClass( 'error text-danger' );
+				$result.remove();
 			}
 		}
 	};

@@ -67,7 +67,7 @@ class Vatchecker extends Module
 	{
 		$this->name = 'vatchecker';
 		$this->tab = 'billing_invoicing';
-		$this->version = '1.1.2';
+		$this->version = '1.2';
 		$this->author = 'Inform-All';
 		$this->need_instance = 1;
 
@@ -102,7 +102,8 @@ class Vatchecker extends Module
 		return parent::install() &&
 			$this->registerHook('displayHeader') &&
 			$this->registerHook('displayBeforeBodyClosingTag') &&
-			$this->registerHook('actionValidateCustomerAddressForm');
+			$this->registerHook('actionValidateCustomerAddressForm') &&
+			$this->registerHook('actionCartSave');
 	}
 
 	public function uninstall()
@@ -359,6 +360,23 @@ class Vatchecker extends Module
 		);
 	}
 
+	public function hookActionCartSave() {
+		$address_id = $this->context->cart->getTaxAddressId();
+		$address = new Address( $address_id );
+
+		$countryId = $address->id_country;
+		$vatNumber = $address->vat_number;
+
+		$vatValid = $this->checkVat( $vatNumber, $countryId );
+
+		if ( null === $vatValid ) {
+			// Module inactive.
+			return;
+		}
+
+		$this->updateNoTaxGroup( $vatValid, $countryId, $this->context->customer );
+	}
+
 	public function hookActionValidateCustomerAddressForm(&$params)
 	{
 		$form       = $params['form'];
@@ -379,7 +397,6 @@ class Vatchecker extends Module
 			return false;
 		}
 
-		// @todo Remove from group.
 		return true;
 	}
 
