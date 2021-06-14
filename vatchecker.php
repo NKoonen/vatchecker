@@ -534,9 +534,9 @@ class Vatchecker extends Module
 			return false;
 		}
 
-		if ( is_numeric( $customer ) ) {
-			return in_array( $group, Customer::getGroupsStatic( $customer ) );
+		if ( $customer instanceof Customer ) {
+			return in_array( $group, $customer->getGroups() );
 		}
-		return in_array( $group, $customer->getGroups() );
+		return in_array( $group, Customer::getGroupsStatic( $customer ) );
 	}
 }
