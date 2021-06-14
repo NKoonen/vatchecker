@@ -29,35 +29,35 @@
  */
 class TaxRulesTaxManager extends TaxRulesTaxManagerCore
 {
-    /**
-     * Return the tax calculator associated to this address.
-     *
-     * @return TaxCalculator
-     */
-    public function getTaxCalculator()
-    {
-        static $tax_enabled = null;
+	/**
+	 * Return the tax calculator associated to this address.
+	 *
+	 * @return TaxCalculator
+	 */
+	public function getTaxCalculator()
+	{
+		static $tax_enabled = null;
 
-        if ( isset( $this->tax_calculator ) ) {
-            return $this->tax_calculator;
-        }
+		if ( isset( $this->tax_calculator ) ) {
+			return $this->tax_calculator;
+		}
 
-        if ( null === $tax_enabled ) {
-	        $hasNoTaxGroup = false;
+		if ( null === $tax_enabled ) {
+			$hasNoTaxGroup = false;
 
-	        $vatchecker    = Module::getInstanceByName('vatchecker');
-        	if ( $vatchecker ) {
+			$vatchecker    = Module::getInstanceByName('vatchecker');
+			if ( $vatchecker ) {
 				$hasNoTaxGroup = $vatchecker->hasNoTaxGroup( $this->address->id_customer );
-	        }
+			}
 
-            #The check if customer is in the Tax free group
-            $tax_enabled = Configuration::get('PS_TAX') && ! $hasNoTaxGroup;
-        }
+			#The check if customer is in the Tax free group
+			$tax_enabled = Configuration::get('PS_TAX') && ! $hasNoTaxGroup;
+		}
 
-	    if ( ! $tax_enabled ) {
-		    return new TaxCalculator( array() );
-	    }
+		if ( ! $tax_enabled ) {
+			return new TaxCalculator( array() );
+		}
 
-        return parent::getTaxCalculator();
-    }
+		return parent::getTaxCalculator();
+	}
 }
