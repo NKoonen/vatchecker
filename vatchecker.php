@@ -118,11 +118,19 @@ class Vatchecker extends Module
 		return parent::uninstall();
 	}
 
+	/**
+	 * @since 1.1.0
+	 * @param array $params
+	 */
 	public function hookDisplayHeader( $params )
 	{
 		$this->context->controller->addJS( $this->_path . 'views/js/front.js' );
 	}
 
+	/**
+	 * @since 1.1.0
+	 * @param array $params
+	 */
 	public function hookDisplayBeforeBodyClosingTag( $params )
 	{
 		$json = array(
@@ -360,6 +368,9 @@ class Vatchecker extends Module
 		);
 	}
 
+	/**
+	 * @since 1.2
+	 */
 	public function hookActionCartSave() {
 		if ( ! $this->context->cart ) {
 			return;
@@ -381,6 +392,11 @@ class Vatchecker extends Module
 		$this->updateNoTaxGroup( $vatValid, $countryId, $this->context->customer );
 	}
 
+	/**
+	 * @since 1.0
+	 * @param $params
+	 * @return bool
+	 */
 	public function hookActionValidateCustomerAddressForm(&$params)
 	{
 		if ( empty( $params['form'] ) ) {
@@ -408,6 +424,12 @@ class Vatchecker extends Module
 		return true;
 	}
 
+	/**
+	 * @since 1.1.0
+	 * @param string     $vatNumber
+	 * @param int|string $countryCode
+	 * @return bool|null
+	 */
 	public function checkVat( $vatNumber, $countryCode = null ) {
 
 		if ( ! Configuration::get( 'VATCHECKER_LIVE_MODE' ) ) {
@@ -426,6 +448,12 @@ class Vatchecker extends Module
 		return $this->checkVies( $countryCode, $vatNumber );
 	}
 
+	/**
+	 * @since 1.0
+	 * @param string $countryCode
+	 * @param string $vatNumber
+	 * @return bool|string
+	 */
 	protected function checkVies( $countryCode, $vatNumber )
 	{
 		try {
@@ -452,6 +480,10 @@ class Vatchecker extends Module
 		}
 	}
 
+	/**
+	 * @since 1.1.0
+	 * @return array
+	 */
 	public function getEUCountries() {
 		$countries = json_decode( Configuration::get( 'VATCHECKER_EU_COUNTRIES' ), true );
 		if ( ! $countries ) {
@@ -466,6 +498,11 @@ class Vatchecker extends Module
 		return $countries;
 	}
 
+	/**
+	 * @since 1.1.0
+	 * @param int|string $countryCode
+	 * @return bool
+	 */
 	public function isEUCountry( $countryCode ) {
 
 		if ( is_numeric( $countryCode ) ) {
@@ -475,10 +512,20 @@ class Vatchecker extends Module
 		return in_array( $countryCode, $this->getEUCountries() );
 	}
 
+	/**
+	 * @since 1.2.1
+	 * @return int|null
+	 */
 	public function getNoTaxGroup() {
 		return Configuration::get('VATCHECKER_NO_TAX_GROUP');
 	}
 
+	/**
+	 * @since 1.1.1
+	 * @param bool|string $vatValid
+	 * @param int         $countryId
+	 * @param Customer    $customer
+	 */
 	public function updateNoTaxGroup( $vatValid, $countryId, $customer = null ) {
 		if ( ! $customer ) {
 			$customer = $this->context->customer;
@@ -508,6 +555,10 @@ class Vatchecker extends Module
 		}
 	}
 
+	/**
+	 * @since 1.1.0
+	 * @param Customer $customer
+	 */
 	public function addNoTaxGroup( $customer ) {
 		$group = $this->getNoTaxGroup();
 		if ( ! $group ) {
@@ -517,6 +568,10 @@ class Vatchecker extends Module
 		$customer->addGroups( array( (int) $group ) );
 	}
 
+	/**
+	 * @since 1.1.0
+	 * @param Customer $customer
+	 */
 	public function removeNoTaxGroup( $customer ) {
 		$group = $this->getNoTaxGroup();
 		if ( ! $group ) {
@@ -532,6 +587,11 @@ class Vatchecker extends Module
 		$customer->updateGroup( $groups );
 	}
 
+	/**
+	 * @since 1.2.1
+	 * @param int|Customer $customer
+	 * @return bool
+	 */
 	public function hasNoTaxGroup( $customer ) {
 		$group = $this->getNoTaxGroup();
 		if ( ! $group ) {
