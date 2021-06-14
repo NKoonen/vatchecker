@@ -25,7 +25,7 @@
  */
 
 /**
- * @since 1.5.0.1
+ * @inheritDoc
  */
 class TaxRulesTaxManager extends TaxRulesTaxManagerCore
 {
