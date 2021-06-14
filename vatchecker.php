@@ -510,4 +510,16 @@ class Vatchecker extends Module
 		}
 		$customer->updateGroup( $groups );
 	}
+
+	public function hasNoTaxGroup( $customer ) {
+		$group = Configuration::get('VATCHECKER_NO_TAX_GROUP');
+		if ( ! $group ) {
+			return false;
+		}
+
+		if ( is_numeric( $customer ) ) {
+			return in_array( $group, Customer::getGroupsStatic( $customer ) );
+		}
+		return in_array( $group, $customer->getGroups() );
+	}
 }
