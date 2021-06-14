@@ -23,35 +23,41 @@
  * @license   https://opensource.org/licenses/OSL-3.0 Open Software License (OSL 3.0)
  * International Registered Trademark & Property of PrestaShop SA
  */
-use PrestaShop\PrestaShop\Adapter\ServiceLocator;
 
 /**
  * @since 1.5.0.1
  */
 class TaxRulesTaxManager extends TaxRulesTaxManagerCore
 {
-	/**
-	 * Return the tax calculator associated to this address.
-	 *
-	 * @return TaxCalculator
-	 */
-	public function getTaxCalculator()
-	{
-		static $tax_enabled = null;
+    /**
+     * Return the tax calculator associated to this address.
+     *
+     * @return TaxCalculator
+     */
+    public function getTaxCalculator()
+    {
+        static $tax_enabled = null;
 
-		if (isset($this->tax_calculator)) {
-			return $this->tax_calculator;
-		}
+        if ( isset( $this->tax_calculator ) ) {
+            return $this->tax_calculator;
+        }
 
-		if ($tax_enabled === null) {
-			#The check if customer is in the Tax free group
-			$tax_enabled = Configuration::get('PS_TAX') && !in_array(Configuration::get('VATCHECKER_NO_TAX_GROUP'), Customer::getGroupsStatic($this->address->id_customer));
-		}
+        if ( null === $tax_enabled ) {
+	        $hasNoTaxGroup = false;
 
-		if (!$tax_enabled) {
-			return new TaxCalculator(array());
-		}
+	        $vatchecker    = Module::getInstanceByName('vatchecker');
+        	if ( $vatchecker ) {
+				$hasNoTaxGroup = $vatchecker->hasNoTaxGroup( $this->address->id_customer );
+	        }
 
-		return parent::getTaxCalculator();
-	}
+            #The check if customer is in the Tax free group
+            $tax_enabled = Configuration::get('PS_TAX') && ! $hasNoTaxGroup;
+        }
+
+	    if ( ! $tax_enabled ) {
+		    return new TaxCalculator( array() );
+	    }
+
+        return parent::getTaxCalculator();
+    }
 }
