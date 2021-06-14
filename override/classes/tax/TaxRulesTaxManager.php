@@ -50,7 +50,7 @@ class TaxRulesTaxManager extends TaxRulesTaxManagerCore
 				$hasNoTaxGroup = $vatchecker->hasNoTaxGroup( $this->address->id_customer );
 			}
 
-			#The check if customer is in the Tax free group
+			// The check if customer is in the Tax free group.
 			$tax_enabled = Configuration::get('PS_TAX') && ! $hasNoTaxGroup;
 		}
 
