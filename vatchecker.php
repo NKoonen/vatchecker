@@ -472,6 +472,15 @@ class Vatchecker extends Module
 			$customer = $this->context->customer;
 		}
 
+		if ( is_string( $vatValid ) ) {
+			$vatValid = $this->checkVat( $vatValid, $countryId );
+
+			if ( null === $vatValid ) {
+				// Module inactive.
+				return;
+			}
+		}
+
 		$is_origin_country = ( (int) Configuration::get( 'VATCHECKER_ORIGIN_COUNTRY' ) === (int) $countryId );
 
 		if ( true === $vatValid ) {
