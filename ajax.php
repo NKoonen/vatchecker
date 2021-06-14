@@ -1,4 +1,7 @@
 <?php
+/**
+ * @since 1.1.0
+ */
 require_once('../../config/config.inc.php');
 require_once('../../init.php');
 require_once(dirname(__FILE__).'/vatchecker.php');

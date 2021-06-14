@@ -20,6 +20,7 @@
  *  @author    Keraweb <info@keraweb.nl>
  *  @copyright 2021-Now Keraweb
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ *  @since     1.1.0
  *  International Registered Trademark & Property of PrestaShop SA
  *
  * Don't forget to prefix your containers with your own identifier
