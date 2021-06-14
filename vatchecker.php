@@ -475,6 +475,10 @@ class Vatchecker extends Module
 		return in_array( $countryCode, $this->getEUCountries() );
 	}
 
+	public function getNoTaxGroup() {
+		return Configuration::get('VATCHECKER_NO_TAX_GROUP');
+	}
+
 	public function updateNoTaxGroup( $vatValid, $countryId, $customer = null ) {
 		if ( ! $customer ) {
 			$customer = $this->context->customer;
@@ -505,7 +509,7 @@ class Vatchecker extends Module
 	}
 
 	public function addNoTaxGroup( $customer ) {
-		$group = Configuration::get( 'VATCHECKER_NO_TAX_GROUP' );
+		$group = $this->getNoTaxGroup();
 		if ( ! $group ) {
 			return;
 		}
@@ -514,7 +518,7 @@ class Vatchecker extends Module
 	}
 
 	public function removeNoTaxGroup( $customer ) {
-		$group = Configuration::get('VATCHECKER_NO_TAX_GROUP');
+		$group = $this->getNoTaxGroup();
 		if ( ! $group ) {
 			return;
 		}
@@ -529,7 +533,7 @@ class Vatchecker extends Module
 	}
 
 	public function hasNoTaxGroup( $customer ) {
-		$group = Configuration::get('VATCHECKER_NO_TAX_GROUP');
+		$group = $this->getNoTaxGroup();
 		if ( ! $group ) {
 			return false;
 		}
