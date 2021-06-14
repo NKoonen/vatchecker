@@ -361,6 +361,10 @@ class Vatchecker extends Module
 	}
 
 	public function hookActionCartSave() {
+		if ( ! $this->context->cart ) {
+			return;
+		}
+
 		$address_id = $this->context->cart->getTaxAddressId();
 		$address = new Address( $address_id );
 
@@ -379,6 +383,10 @@ class Vatchecker extends Module
 
 	public function hookActionValidateCustomerAddressForm(&$params)
 	{
+		if ( empty( $params['form'] ) ) {
+			return true;
+		}
+
 		$form       = $params['form'];
 		$countryId  = $form->getField('id_country')->getValue();
 		$vatNumber  = $form->getField('vat_number')->getValue();
