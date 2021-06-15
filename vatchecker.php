@@ -405,7 +405,10 @@ class Vatchecker extends Module
 
 		$form       = $params['form'];
 		$countryId  = $form->getField('id_country')->getValue();
-		$vatNumber  = $form->getField('vat_number')->getValue();
+		if ( ! $form->getField('vat_number') ) {
+			return true;
+		}
+		$vatNumber = $form->getField('vat_number')->getValue();
 
 		$vatValid = $this->checkVat( $vatNumber, $countryId );
 
