@@ -389,6 +389,8 @@ class Vatchecker extends Module
 			return;
 		}
 
+		$vatValid = true === $vatValid;
+
 		$this->updateNoTaxGroup( $vatValid, $countryId, $this->context->customer );
 	}
 
