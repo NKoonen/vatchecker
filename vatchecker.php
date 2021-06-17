@@ -67,7 +67,7 @@ class Vatchecker extends Module
 	{
 		$this->name = 'vatchecker';
 		$this->tab = 'billing_invoicing';
-		$this->version = '1.2.1';
+		$this->version = '1.2.2';
 		$this->author = 'Inform-All';
 		$this->need_instance = 1;
 
@@ -378,7 +378,7 @@ class Vatchecker extends Module
 		}
 
 		$address_id = $this->context->cart->getTaxAddressId();
-		if ( ! $address_id || $address_id === $cache ) {
+		if ( ! $address_id ) {
 			return;
 		}
 
@@ -386,6 +386,11 @@ class Vatchecker extends Module
 
 		$countryId = $address->id_country;
 		$vatNumber = $address->vat_number;
+		$cache_key = $countryId . $vatNumber;
+
+		if ( isset( $cache[ $cache_key ] ) ) {
+			return;
+		}
 
 		$vatValid = $this->checkVat( $vatNumber, $countryId );
 
@@ -398,7 +403,7 @@ class Vatchecker extends Module
 
 		$this->updateNoTaxGroup( $vatValid, $countryId, $this->context->customer );
 
-		$cache = $address_id;
+		$cache[ $cache_key ] = $vatValid;
 	}
 
 	/**
