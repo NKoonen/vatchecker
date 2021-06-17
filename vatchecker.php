@@ -372,11 +372,16 @@ class Vatchecker extends Module
 	 * @since 1.2
 	 */
 	public function hookActionCartSave() {
+		static $cache = array();
 		if ( ! $this->context->cart ) {
 			return;
 		}
 
 		$address_id = $this->context->cart->getTaxAddressId();
+		if ( ! $address_id || $address_id === $cache ) {
+			return;
+		}
+
 		$address = new Address( $address_id );
 
 		$countryId = $address->id_country;
@@ -392,6 +397,8 @@ class Vatchecker extends Module
 		$vatValid = true === $vatValid;
 
 		$this->updateNoTaxGroup( $vatValid, $countryId, $this->context->customer );
+
+		$cache = $address_id;
 	}
 
 	/**
