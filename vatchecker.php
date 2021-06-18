@@ -377,6 +377,7 @@ class Vatchecker extends Module
 			return;
 		}
 
+		// Only run method on checkout page.
 		$controller = $this->context->controller->php_self;
 		if ( ! in_array( $controller, array( 'order', 'checkoutpayment-form' ) ) ) {
 			return;
