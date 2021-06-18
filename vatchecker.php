@@ -604,6 +604,10 @@ class Vatchecker extends Module
 		if ( ! $group ) {
 			return;
 		}
+		if ( $this->hasNoTaxGroup( $customer ) ) {
+			// Already in group.
+			return;
+		}
 
 		$customer->addGroups( array( (int) $group ) );
 	}
@@ -615,6 +619,10 @@ class Vatchecker extends Module
 	protected function removeNoTaxGroup( $customer ) {
 		$group = $this->getNoTaxGroup();
 		if ( ! $group ) {
+			return;
+		}
+		if ( ! $this->hasNoTaxGroup( $customer ) ) {
+			// Not in group.
 			return;
 		}
 
