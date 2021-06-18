@@ -386,9 +386,13 @@ class Vatchecker extends Module
 
 		$countryId = $address->id_country;
 		$vatNumber = $address->vat_number;
+
 		$cache_key = $countryId . $vatNumber;
 
 		if ( isset( $cache[ $cache_key ] ) ) {
+			$vatValid = true === $cache[ $cache_key ];
+			$this->updateNoTaxGroup( $vatValid, $countryId, $this->context->customer );
+
 			return;
 		}
 
