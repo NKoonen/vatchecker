@@ -599,7 +599,7 @@ class Vatchecker extends Module
 	 * @since 1.1.0
 	 * @param Customer $customer
 	 */
-	public function addNoTaxGroup( $customer ) {
+	protected function addNoTaxGroup( $customer ) {
 		$group = $this->getNoTaxGroup();
 		if ( ! $group ) {
 			return;
@@ -612,7 +612,7 @@ class Vatchecker extends Module
 	 * @since 1.1.0
 	 * @param Customer $customer
 	 */
-	public function removeNoTaxGroup( $customer ) {
+	protected function removeNoTaxGroup( $customer ) {
 		$group = $this->getNoTaxGroup();
 		if ( ! $group ) {
 			return;
