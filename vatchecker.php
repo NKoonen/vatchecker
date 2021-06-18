@@ -377,6 +377,11 @@ class Vatchecker extends Module
 			return;
 		}
 
+		$controller = $this->context->controller->php_self;
+		if ( ! in_array( $controller, array( 'order', 'checkoutpayment-form' ) ) ) {
+			return;
+		}
+
 		$address_id = $this->context->cart->getTaxAddressId();
 		if ( ! $address_id ) {
 			return;
