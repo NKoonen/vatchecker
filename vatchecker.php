@@ -539,6 +539,22 @@ class Vatchecker extends Module
 	}
 
 	/**
+	 * @since 1.2.2
+	 * @param int|string $countryId
+	 * @return bool
+	 */
+	public function isOriginCountry( $countryId ) {
+		if ( ! is_numeric( $countryId ) ) {
+			$country = Country::getByIso( $countryId );
+			if ( ! isset( $country['id_country'] ) ) {
+				return false;
+			}
+			$countryId = $country['id_country'];
+		}
+		return ( (int) Configuration::get( 'VATCHECKER_ORIGIN_COUNTRY' ) === (int) $countryId );
+	}
+
+	/**
 	 * @since 1.2.1
 	 * @return int|null
 	 */
@@ -566,11 +582,9 @@ class Vatchecker extends Module
 			}
 		}
 
-		$is_origin_country = ( (int) Configuration::get( 'VATCHECKER_ORIGIN_COUNTRY' ) === (int) $countryId );
-
 		if ( true === $vatValid ) {
 
-			if ( ! $is_origin_country ) {
+			if ( ! $this->isOriginCountry( (int) $countryId ) ) {
 				// If all is correct, put the customer in the no TAX group.
 				$this->addNoTaxGroup( $customer );
 			} else {
