@@ -43,15 +43,25 @@ class TaxRulesTaxManager extends TaxRulesTaxManagerCore
 		}
 
 		if ( null === $tax_enabled ) {
-			$hasNoTaxGroup = false;
+			$tax_enabled = Configuration::get('PS_TAX');
 
+			/** @var Vatchecker $vatchecker */
 			$vatchecker    = Module::getInstanceByName('vatchecker');
 			if ( $vatchecker ) {
-				$hasNoTaxGroup = $vatchecker->hasNoTaxGroup( $this->address->id_customer );
-			}
 
-			// The check if customer is in the Tax free group.
-			$tax_enabled = Configuration::get('PS_TAX') && ! $hasNoTaxGroup;
+				// Check if the customer is part of the no TAX group.
+				$hasNoTaxGroup = $vatchecker->hasNoTaxGroup( $this->address->id_customer );
+				if ( $hasNoTaxGroup ) {
+
+					// Double-check if the address isn't the same as the origin country.
+					$isOriginCountry = $vatchecker->isOriginCountry( $this->address->id_country );
+					if ( ! $isOriginCountry ) {
+
+						// Disable TAX.
+						$tax_enabled = false;
+					}
+				}
+			}
 		}
 
 		if ( ! $tax_enabled ) {
