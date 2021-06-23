@@ -51,7 +51,13 @@ class TaxRulesTaxManager extends TaxRulesTaxManagerCore
 
 				// Check if the customer is part of the no TAX group.
 				$hasNoTaxGroup = $vatchecker->hasNoTaxGroup( $this->address->id_customer );
-				if ( $hasNoTaxGroup ) {
+				
+				// Crezzur: Added additional check to see if vatnumber is not empty when user is in NoTaxGroup.
+				if ( $hasNoTaxGroup && !$this->address->vat_number ) {
+
+					$tax_enabled = null; // If no TAX number = Pay taxes
+
+				} else if ( $hasNoTaxGroup ) {
 
 					// Double-check if the address isn't the same as the origin country.
 					$isOriginCountry = $vatchecker->isOriginCountry( $this->address->id_country );
