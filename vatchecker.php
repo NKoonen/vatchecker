@@ -463,6 +463,10 @@ class Vatchecker extends Module
 			return null;
 		}
 
+		if ( ! is_string( $vatNumber ) || 8 > strlen( $vatNumber ) ) {
+			return false;
+		}
+
 		if ( is_numeric( $countryCode ) ) {
 			$countryCode = Country::getIsoById( $countryCode );
 		}
@@ -471,7 +475,7 @@ class Vatchecker extends Module
 			return $this->l('Please select an EU country');
 		}
 
-		$vatNumber = str_replace( $countryCode, "", $vatNumber);
+		$vatNumber = ltrim( $vatNumber, $countryCode );
 		return $this->checkVies( $countryCode, $vatNumber );
 	}
 
