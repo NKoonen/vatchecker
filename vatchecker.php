@@ -67,7 +67,7 @@ class Vatchecker extends Module
 	{
 		$this->name = 'vatchecker';
 		$this->tab = 'billing_invoicing';
-		$this->version = '1.2.2';
+		$this->version = '1.2.3';
 		$this->author = 'Inform-All';
 		$this->need_instance = 1;
 
