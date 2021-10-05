@@ -578,20 +578,7 @@ class Vatchecker extends Module
 		}
 
 		// Only one result.
-		$result = reset( $result );
-
-		$db_id_address = (int) $result['id_address'];
-		$db_id_country = (int) $result['id_country'];
-		$db_vat_number = $result['vat_number'];
-
-		if (
-			$addressId != $db_id_address ||
-			$countryId != $db_id_country ||
-			$vatNumber != $db_vat_number
-		) {
-			return null;
-		}
-		return $result;
+		return reset( $result );
 	}
 
 	/**
