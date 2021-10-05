@@ -602,7 +602,7 @@ class Vatchecker extends Module
 		$table = _DB_PREFIX_ . 'vatchecker';
 
 		if ( empty( $record['id_vatchecker'] ) ) {
-			$exists = $this->getVatValidation( $record['id_address'], $record['id_country'], $record['vat_number'] );
+			$exists = $this->getVatValidation( $record['id_address'] );
 			if ( $exists ) {
 				$record['id_vatchecker'] = $exists['id_vatchecker'];
 			}
