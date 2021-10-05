@@ -417,7 +417,7 @@ class Vatchecker extends Module
 			return;
 		}
 
-		$vatValid = $this->isValidVat( $address );
+		$vatValid = $this->isValidVat( $address, true );
 
 		if ( null === $vatValid ) {
 			// Module inactive or VIES server offline.
@@ -475,10 +475,11 @@ class Vatchecker extends Module
 	 *     @type int     $countryId
 	 *     @type string  $vatNumber
 	 * }
+	 * @param bool $error Return error (if any) instead of boolean.
 	 *
-	 * @return bool
+	 * @return bool|string Optionally returns string on error if errors are enabled.
 	 */
-	public function isValidVat( $params ) {
+	public function isValidVat( $params, $error = false ) {
 		if ( $params instanceof Address) {
 			$address   = $params;
 			$addressId = $address->id;
@@ -544,8 +545,14 @@ class Vatchecker extends Module
 		if ( is_bool( $vatCheck ) ) {
 			$result['valid'] = $vatCheck;
 			$this->setVatValidation( $result );
+
+			return $vatCheck;
 		}
 
+		if ( ! $error ) {
+			// Convert null to true: module offline.
+			return null === $vatCheck;
+		}
 		return $vatCheck;
 	}
 

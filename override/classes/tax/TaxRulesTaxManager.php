@@ -52,7 +52,7 @@ class TaxRulesTaxManager extends TaxRulesTaxManagerCore
 			if ( $vatchecker ) {
 
 				// Check if the customer can order without VAT on the selected address.
-				$validVat = $vatchecker->isValidVat( $this->address );
+				$validVat = $vatchecker->isValidVat( $this->address, false );
 				if ( $validVat ) {
 
 					// Double-check if the address isn't the same as the origin country.
