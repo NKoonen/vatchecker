@@ -51,9 +51,9 @@ class TaxRulesTaxManager extends TaxRulesTaxManagerCore
 			$vatchecker = Module::getInstanceByName('vatchecker');
 			if ( $vatchecker ) {
 
-				// Check if the customer is part of the no TAX group.
-				$hasNoTaxGroup = $vatchecker->hasNoTaxGroup( $this->address->id_customer );
-				if ( $hasNoTaxGroup ) {
+				// Check if the customer can order without VAT on the selected address.
+				$validVat = $vatchecker->isValidVat( $this->address );
+				if ( $validVat ) {
 
 					// Double-check if the address isn't the same as the origin country.
 					$isOriginCountry = $vatchecker->isOriginCountry( $this->address->id_country );
