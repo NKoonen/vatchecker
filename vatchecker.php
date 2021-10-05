@@ -471,6 +471,50 @@ class Vatchecker extends Module
 	}
 
 	/**
+	 * @throws PrestaShopDatabaseException
+	 *
+	 * @param $countryId
+	 * @param $vatNumber
+	 * @param $addressId
+	 *
+	 * @return false|mixed|null
+	 */
+	private function getVatValidation( $addressId, $countryId, $vatNumber ) {
+		if ( ! $addressId || ! $countryId || ! $vatNumber ) {
+			return null;
+		}
+
+		$table = _DB_PREFIX_ . 'vatchecker';
+
+		$sql = "SELECT * FROM {$table}
+			WHERE id_address = {$addressId}
+			    AND id_country = {$countryId}
+			    AND vat_number = {$vatNumber}
+			";
+
+		$result = Db::getInstance()->executeS( $sql );
+		if ( empty( $result ) ) {
+			return null;
+		}
+
+		// Only one result.
+		$result = reset( $result );
+
+		$db_id_address = (int) $result['id_address'];
+		$db_id_country = (int) $result['id_country'];
+		$db_vat_number = $result['vat_number'];
+
+		if (
+			$addressId != $db_id_address ||
+			$countryId != $db_id_country ||
+			$vatNumber != $db_vat_number
+		) {
+			return null;
+		}
+		return $result;
+	}
+
+	/**
 	 * @since 1.1.0
 	 * @param string     $vatNumber
 	 * @param int|string $countryCode
