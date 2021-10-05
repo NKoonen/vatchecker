@@ -407,16 +407,12 @@ class Vatchecker extends Module
 			return;
 		}
 
-		$address = new Address( $address_id );
-
-		$countryId = $address->id_country;
-		$vatNumber = $address->vat_number;
-
+		$address   = new Address( $address_id );
 		$cache_key = $address_id;
 
 		if ( isset( $cache[ $cache_key ] ) ) {
 			$vatValid = true === $cache[ $cache_key ];
-			$this->updateNoTaxGroup( $vatValid, $countryId, $this->context->customer );
+			$this->updateNoTaxGroup( $vatValid, $address->id_country, $this->context->customer );
 
 			return;
 		}
@@ -430,7 +426,7 @@ class Vatchecker extends Module
 
 		$vatValid = true === $vatValid;
 
-		$this->updateNoTaxGroup( $vatValid, $countryId, $this->context->customer );
+		$this->updateNoTaxGroup( $vatValid, $address->id_country, $this->context->customer );
 
 		$cache[ $cache_key ] = $vatValid;
 	}
