@@ -479,6 +479,11 @@ class Vatchecker extends Module
 	 * @return bool
 	 */
 	public function canOrderWithoutVat( $address ) {
+		$address = $this->getAddress( $address );
+		if ( ! $address ) {
+			return false;
+		}
+
 		if ( $this->isOriginCountry( $address->id_country ) ) {
 			return false;
 		}
