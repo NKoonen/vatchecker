@@ -43,10 +43,12 @@ class TaxRulesTaxManager extends TaxRulesTaxManagerCore
 		}
 
 		if ( null === $tax_enabled ) {
-			$tax_enabled = Configuration::get('PS_TAX');
+			$tax_enabled = Configuration::get( 'PS_TAX' );
+		}
 
+		if ( $tax_enabled ) {
 			/** @var Vatchecker $vatchecker */
-			$vatchecker    = Module::getInstanceByName('vatchecker');
+			$vatchecker = Module::getInstanceByName('vatchecker');
 			if ( $vatchecker ) {
 
 				// Check if the customer is part of the no TAX group.
