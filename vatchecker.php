@@ -371,8 +371,8 @@ class Vatchecker extends Module
 					array(
 						'type'    => 'select',
 						'name'    => 'VATCHECKER_NO_TAX_GROUP',
-						'label'   => $this->l('Valid VAT Group'),
-						'desc'    => $this->l('Customers with valid VAT number will be place in this group.'),
+						'label'   => $this->l('Valid VAT Group') . ' (' . $this->l( 'Optional' ) . ')',
+						'desc'    => $this->l('Customers with valid VAT number will be placed in this group.'),
 						'options' => array(
 							'query'   => Group::getGroups(Context::getContext()->language->id, true),
 							'id'      => 'id_group',
