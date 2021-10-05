@@ -541,6 +541,15 @@ class Vatchecker extends Module
 			}
 		}
 
+		$today = date( 'Y-m-d H:i:s' );
+		$result['date_modified'] = $today;
+		if ( $result['valid'] ) {
+			$result['date_valid_vat'] = $today;
+		}
+		if ( ! $result['date_add'] ) {
+			$result['date_add'] = $today;
+		}
+
 		$keys = array();
 		$values = array();
 		foreach ( $record as $key => $value ) {
