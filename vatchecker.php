@@ -662,7 +662,7 @@ class Vatchecker extends Module
 			// Update.
 			$id = (int) $record['id_vatchecker'];
 			foreach ( $values as $key => $value ) {
-				$values = $keys[ $key ] . ' = ' . $value;
+				$values[ $key ] = $keys[ $key ] . ' = ' . $value;
 			}
 			$values = implode( ', ', $values );
 			$sql    = "UPDATE {$table} SET {$values} WHERE id_vatchecker = {$id}";
