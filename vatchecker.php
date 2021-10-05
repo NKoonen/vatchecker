@@ -489,41 +489,15 @@ class Vatchecker extends Module
 	/**
 	 * Check if a VAT number is valid using the address data.
 	 *
-	 * @param Address|array $params {
-	 *     @type Address $address
-	 *     @type int     $addreddId
-	 *     @type int     $countryId
-	 *     @type string  $vatNumber
-	 * }
+	 * @param Address $address
 	 * @param bool $error Return error (if any) instead of boolean.
 	 *
 	 * @return bool|string Optionally returns string on error if errors are enabled.
 	 */
-	public function isValidVat( $params, $error = false ) {
-		if ( $params instanceof Address) {
-			$address   = $params;
-			$addressId = $address->id;
-			$vatNumber = $address->vat_number;
-			$countryId = $address->id_country;
-		} elseif ( ! empty( $params['address'] ) && $params['address'] instanceof Address ) {
-			$address = $params['address'];
-
-			$addressId = $address->id;
-			$vatNumber = $address->vat_number;
-			$countryId = $address->id_country;
-
-		} else {
-			if ( empty( $params['vatNumber'] ) || empty( $params['countryId'] ) ) {
-				return false;
-			}
-			$vatNumber = $params['vatNumber'];
-			$countryId = $params['countryId'];
-			$addressId = ! empty( $params['addressId'] ) ? $params['addressId'] : '';
-			if ( ! $addressId ) {
-				// Check VAT without DB storage.
-				return $this->checkVat( $vatNumber, $countryId );
-			}
-			$address = new Address( $addressId );
+	public function isValidVat( $address, $error = false ) {
+		$address = $this->getAddress( $address );
+		if ( ! $address ) {
+			return false;
 		}
 
 		/**
@@ -539,7 +513,8 @@ class Vatchecker extends Module
 		 *     @type string date_valid_vat
 		 * }
 		 */
-		$result = $this->getVatValidation( $addressId, $countryId, $vatNumber );
+		$result = $this->getVatValidation( $address );
+
 		if ( $result ) {
 
 			// VIES API already ran successfully within 24 hours.
@@ -548,10 +523,10 @@ class Vatchecker extends Module
 			}
 		} else {
 			$result = array(
-				'id_address'     => $addressId,
-				'id_country'     => $countryId,
+				'id_address'     => $address->id,
+				'id_country'     => $address->id_country,
 				'company'        => $address->company,
-				'vat_number'     => $vatNumber,
+				'vat_number'     => $address->vat_number,
 				'valid'          => false,
 				'date_add'       => '',
 				'date_modified'  => '',
@@ -559,7 +534,7 @@ class Vatchecker extends Module
 			);
 		}
 
-		$vatCheck = $this->checkVat( $vatNumber, $countryId );
+		$vatCheck = $this->checkVat( $address->vat_number, $address->id_country );
 
 		// Make sure it's a boolean, otherwise it's an error so we don't want to update the database.
 		if ( is_bool( $vatCheck ) ) {
@@ -579,23 +554,22 @@ class Vatchecker extends Module
 	/**
 	 * @throws PrestaShopDatabaseException
 	 *
-	 * @param $countryId
-	 * @param $vatNumber
-	 * @param $addressId
+	 * @param Address $address
 	 *
 	 * @return false|mixed|null
 	 */
-	private function getVatValidation( $addressId, $countryId, $vatNumber ) {
-		if ( ! $addressId || ! $countryId || ! $vatNumber ) {
+	private function getVatValidation( $address ) {
+		$address = $this->getAddress( $address );
+		if ( ! $address ) {
 			return null;
 		}
 
 		$table = _DB_PREFIX_ . 'vatchecker';
 
 		$sql = "SELECT * FROM {$table}
-			WHERE id_address = {$addressId}
-			    AND id_country = {$countryId}
-			    AND vat_number = {$vatNumber}
+			WHERE id_address = {$address->id}
+			    AND id_country = {$address->id_country}
+			    AND vat_number = '{$address->vat_number}'
 			";
 
 		$result = Db::getInstance()->executeS( $sql );
