@@ -502,6 +502,10 @@ class Vatchecker extends Module
 			$vatNumber = $params['vatNumber'];
 			$countryId = $params['countryId'];
 			$addressId = ! empty( $params['addressId'] ) ? $params['addressId'] : '';
+			if ( ! $addressId ) {
+				// Check VAT without DB storage.
+				return $this->checkVat( $vatNumber, $countryId );
+			}
 			$address = new Address( $addressId );
 		}
 
