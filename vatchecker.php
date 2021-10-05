@@ -670,7 +670,7 @@ class Vatchecker extends Module
 			// Insert.
 			$keys   = implode( ', ', $keys );
 			$values = implode( ', ', $values );
-			$sql    = 'INSERT INTO {$table} ({$keys}) VALUES ({$values})';
+			$sql    = "INSERT INTO {$table} ({$keys}) VALUES ({$values})";
 		}
 
 		return Db::getInstance()->executeS( $sql );
