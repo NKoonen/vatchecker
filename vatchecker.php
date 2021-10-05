@@ -100,10 +100,29 @@ class Vatchecker extends Module
 		//Configuration::updateValue('VATCHECKER_NO_TAX_GROUP', null);
 
 		return parent::install() &&
+			$this->installDB() &&
 			$this->registerHook('displayHeader') &&
 			$this->registerHook('displayBeforeBodyClosingTag') &&
 			$this->registerHook('actionValidateCustomerAddressForm') &&
 			$this->registerHook('actionCartSave');
+	}
+
+	public function installDB()
+	{
+		$sql = 'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'vatchecker'.'` (
+			`id_vatchecker` int(12) UNSIGNED NOT NULL AUTO_INCREMENT,
+			`id_address` INTEGER UNSIGNED NOT NULL,
+			`id_country` INTEGER UNSIGNED NOT NULL,
+			`company` varchar(255) default \'\',
+			`vat_number` varchar(32) NOT NULL,
+			`valid` int(1) UNSIGNED NOT NULL,
+			`date_add` datetime NOT NULL,
+			`date_modified` datetime NOT NULL,
+			`date_valid_vat` datetime,
+			PRIMARY KEY(`id`)
+		) ENGINE='._MYSQL_ENGINE_.' DEFAULT CHARSET=utf8';
+
+		return Db::getInstance()->execute($sql);
 	}
 
 	public function uninstall()
