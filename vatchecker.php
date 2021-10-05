@@ -639,12 +639,12 @@ class Vatchecker extends Module
 		}
 
 		$today = date( 'Y-m-d H:i:s' );
-		$result['date_modified'] = $today;
-		if ( $result['valid'] ) {
-			$result['date_valid_vat'] = $today;
+		$record['date_modified'] = $today;
+		if ( $record['valid'] ) {
+			$record['date_valid_vat'] = $today;
 		}
-		if ( ! $result['date_add'] ) {
-			$result['date_add'] = $today;
+		if ( empty( $record['date_add'] ) ) {
+			$record['date_add'] = $today;
 		}
 
 		$keys   = array();
