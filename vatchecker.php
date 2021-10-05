@@ -67,7 +67,7 @@ class Vatchecker extends Module
 	{
 		$this->name = 'vatchecker';
 		$this->tab = 'billing_invoicing';
-		$this->version = '1.2.3';
+		$this->version = '1.3.0';
 		$this->author = 'Inform-All';
 		$this->need_instance = 1;
 
@@ -107,6 +107,10 @@ class Vatchecker extends Module
 			$this->registerHook('actionCartSave');
 	}
 
+	/**
+	 * @since 1.3.0
+	 * @return bool
+	 */
 	public function installDB()
 	{
 		$sql = 'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'vatchecker'.'` (
@@ -495,6 +499,8 @@ class Vatchecker extends Module
 	/**
 	 * Check if a VAT number is valid using the address data.
 	 *
+	 * @since 1.3.0
+	 *
 	 * @param Address $address
 	 * @param bool $error Return error (if any) instead of boolean.
 	 *
@@ -527,6 +533,7 @@ class Vatchecker extends Module
 			if ( strtotime( $result['date_modified'] ) > strtotime( '-1 day' ) ) {
 				return (bool) $result['valid'];
 			}
+
 		} else {
 			$result = array(
 				'id_address'     => $address->id,
@@ -558,6 +565,10 @@ class Vatchecker extends Module
 	}
 
 	/**
+	 * Get VAT validation from the database.
+	 *
+	 * @since 1.3.0
+	 *
 	 * @throws PrestaShopDatabaseException
 	 *
 	 * @param Address $address
@@ -588,6 +599,10 @@ class Vatchecker extends Module
 	}
 
 	/**
+	 * Update/Set VAT validation in the database.
+	 *
+	 * @since 1.3.0
+	 *
 	 * @throws PrestaShopDatabaseException
 	 *
 	 * @param array $record {
@@ -632,7 +647,7 @@ class Vatchecker extends Module
 			$result['date_add'] = $today;
 		}
 
-		$keys = array();
+		$keys   = array();
 		$values = array();
 		foreach ( $record as $key => $value ) {
 			$keys[ $key ] = "`{$key}`";
@@ -663,10 +678,13 @@ class Vatchecker extends Module
 
 	/**
 	 * @since 1.1.0
+	 *
 	 * @param string     $vatNumber
 	 * @param int|string $countryCode
-	 * @param bool       $error  Return error string?
-	 * @return bool|null
+	 * @param bool       $error  Return error string if errored?
+	 *
+	 * @return bool|null|string Optionally returns string on error if errors are enabled.
+	 *                          Otherwise a boolean or null (disabled).
 	 */
 	public function checkVat( $vatNumber, $countryCode = null, $error = true ) {
 
@@ -703,9 +721,11 @@ class Vatchecker extends Module
 
 	/**
 	 * @since 1.0
+	 *
 	 * @param string $countryCode
 	 * @param string $vatNumber
-	 * @return bool|string
+	 *
+	 * @return bool|null|string
 	 */
 	protected function checkVies( $countryCode, $vatNumber )
 	{
