@@ -471,6 +471,74 @@ class Vatchecker extends Module
 	}
 
 	/**
+	 * Check if a VAT number is valid using the address data.
+	 *
+	 * @param Address|array $params {
+	 *     @type Address $address
+	 *     @type int     $addreddId
+	 *     @type int     $countryId
+	 *     @type string  $vatNumber
+	 * }
+	 *
+	 * @return bool
+	 */
+	public function isValidVat( $params ) {
+		if ( $params instanceof Address) {
+			$address   = $params;
+			$addressId = $address->id;
+			$vatNumber = $address->vat_number;
+			$countryId = $address->id_country;
+		} elseif ( ! empty( $params['address'] ) && $params['address'] instanceof Address ) {
+			$address = $params['address'];
+
+			$addressId = $address->id;
+			$vatNumber = $address->vat_number;
+			$countryId = $address->id_country;
+
+		} else {
+			if ( empty( $params['vatNumber'] ) || empty( $params['countryId'] ) ) {
+				return false;
+			}
+			$vatNumber = $params['vatNumber'];
+			$countryId = $params['countryId'];
+			$addressId = ! empty( $params['addressId'] ) ? $params['addressId'] : '';
+			$address = new Address( $addressId );
+		}
+
+		/**
+		 * @var array $result {
+		 *     @type int    id_vatchecker
+		 *     @type int    id_address
+		 *     @type int    id_country
+		 *     @type string company
+		 *     @type string vat_number
+		 *     @type bool   valid
+		 *     @type string date_add
+		 *     @type string date_modified
+		 *     @type string date_valid_vat
+		 * }
+		 */
+		$result = $this->getVatValidation( $addressId, $countryId, $vatNumber );
+		if ( $result ) {
+
+			// VIES API already ran successfully within 24 hours.
+			if ( strtotime( $result['date_modified'] ) > strtotime( '-1 day' ) ) {
+				return (bool) $result['valid'];
+			}
+		}
+
+		$vatCheck = $this->checkVat( $vatNumber, $countryId );
+
+		// Make sure it's a boolean, otherwise it's an error so we don't want to update the database.
+		if ( is_bool( $vatCheck ) ) {
+			$result['valid'] = $vatCheck;
+			$this->setVatValidation( $result );
+		}
+
+		return $vatCheck;
+	}
+
+	/**
 	 * @throws PrestaShopDatabaseException
 	 *
 	 * @param $countryId
