@@ -529,6 +529,17 @@ class Vatchecker extends Module
 			if ( strtotime( $result['date_modified'] ) > strtotime( '-1 day' ) ) {
 				return (bool) $result['valid'];
 			}
+		} else {
+			$result = array(
+				'id_address'     => $addressId,
+				'id_country'     => $countryId,
+				'company'        => $address->company,
+				'vat_number'     => $vatNumber,
+				'valid'          => false,
+				'date_add'       => '',
+				'date_modified'  => '',
+				'date_valid_vat' => '',
+			);
 		}
 
 		$vatCheck = $this->checkVat( $vatNumber, $countryId );
