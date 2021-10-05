@@ -590,7 +590,7 @@ class Vatchecker extends Module
 			";
 
 		$result = Db::getInstance()->executeS( $sql );
-		if ( empty( $result ) ) {
+		if ( ! $result ) {
 			return null;
 		}
 
