@@ -470,6 +470,23 @@ class Vatchecker extends Module
 	}
 
 	/**
+	 * Check if an address can order without VAT.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param Address $address
+	 *
+	 * @return bool
+	 */
+	public function canOrderWithoutVat( $address ) {
+		if ( $this->isOriginCountry( $address->id_country ) ) {
+			return false;
+		}
+
+		return $this->isValidVat( $address, false );
+	}
+
+	/**
 	 * Check if a VAT number is valid using the address data.
 	 *
 	 * @param Address|array $params {
