@@ -515,6 +515,55 @@ class Vatchecker extends Module
 	}
 
 	/**
+	 * @throws PrestaShopDatabaseException
+	 *
+	 * @param array $record {
+	 *     @type int    id_vatchecker
+	 *     @type int    id_address
+	 *     @type int    id_country
+	 *     @type string company
+	 *     @type string vat_number
+	 *     @type bool   valid
+	 *     @type string date_add
+	 *     @type string date_modified
+	 *     @type string date_valid_vat
+	 * }
+	 *
+	 * @return array|bool|mysqli_result|PDOStatement|resource|null
+	 */
+	private function setVatValidation( $record ) {
+		$table = _DB_PREFIX_ . 'vatchecker';
+
+		$keys = array();
+		$values = array();
+		foreach ( $record as $key => $value ) {
+			$keys[ $key ] = "`{$key}`";
+			if ( is_bool( $value ) ) {
+				$values[ $key ] = (int) $value;
+			} else {
+				$values[ $key ] = "'{$value}'";
+			}
+		}
+
+		if ( ! empty( $record['id_vatchecker'] ) ) {
+			// Update.
+			$id = (int) $record['id_vatchecker'];
+			foreach ( $values as $key => $value ) {
+				$values = $keys[ $key ] . ' = ' . $value;
+			}
+			$values = implode( ', ', $values );
+			$sql    = "UPDATE {$table} SET {$values} WHERE id_vatchecker = {$id}";
+		} else {
+			// Insert.
+			$keys   = implode( ', ', $keys );
+			$values = implode( ', ', $values );
+			$sql    = 'INSERT INTO {$table} ({$keys}) VALUES ({$values})';
+		}
+
+		return Db::getInstance()->executeS( $sql );
+	}
+
+	/**
 	 * @since 1.1.0
 	 * @param string     $vatNumber
 	 * @param int|string $countryCode
