@@ -123,7 +123,7 @@ class Vatchecker extends Module
 			`date_add` datetime NOT NULL,
 			`date_modified` datetime NOT NULL,
 			`date_valid_vat` datetime,
-			PRIMARY KEY(`id`)
+			PRIMARY KEY(`id_vatchecker`)
 		) ENGINE='._MYSQL_ENGINE_.' DEFAULT CHARSET=utf8';
 
 		return Db::getInstance()->execute($sql);
