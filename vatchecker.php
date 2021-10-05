@@ -457,7 +457,7 @@ class Vatchecker extends Module
 		}
 		$vatNumber = $form->getField('vat_number')->getValue();
 
-		$vatValid = $this->checkVat( $vatNumber, $countryId );
+		$vatValid = $this->checkVat( $vatNumber, $countryId, true );
 
 		if ( null === $vatValid ) {
 			// Module inactive or VIES server offline.
@@ -547,7 +547,7 @@ class Vatchecker extends Module
 			);
 		}
 
-		$vatCheck = $this->checkVat( $address->vat_number, $address->id_country );
+		$vatCheck = $this->checkVat( $address->vat_number, $address->id_country, true );
 
 		// Make sure it's a boolean, otherwise it's an error so we don't want to update the database.
 		if ( is_bool( $vatCheck ) ) {
