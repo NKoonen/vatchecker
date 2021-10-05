@@ -814,6 +814,20 @@ class Vatchecker extends Module
 	}
 
 	/**
+	 * @param Address|int $address
+	 * @return Address|null
+	 */
+	public function getAddress( $address ) {
+		if ( is_numeric( $address ) ) {
+			$address = new Address( $address );
+		}
+		if ( $address instanceof Address ) {
+			return $address;
+		}
+		return null;
+	}
+
+	/**
 	 * @since 1.1.1
 	 * @param bool|string $vatValid
 	 * @param int         $countryId
