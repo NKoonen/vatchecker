@@ -455,16 +455,17 @@ class Vatchecker extends Module
 	 * @since 1.1.0
 	 * @param string     $vatNumber
 	 * @param int|string $countryCode
+	 * @param bool       $error  Return error string?
 	 * @return bool|null
 	 */
-	public function checkVat( $vatNumber, $countryCode = null ) {
+	public function checkVat( $vatNumber, $countryCode = null, $error = true ) {
 
 		if ( ! Configuration::get( 'VATCHECKER_LIVE_MODE' ) ) {
 			return null;
 		}
 
 		if ( ! is_string( $vatNumber ) || 8 > strlen( $vatNumber ) ) {
-			return false;
+			return ( $error ) ? $this->l('VAT number format invalid') : false;
 		}
 
 		if ( is_numeric( $countryCode ) ) {
@@ -472,7 +473,7 @@ class Vatchecker extends Module
 		}
 
 		if ( ! $this->isEUCountry( $countryCode ) ) {
-			return $this->l('Please select an EU country');
+			return ( $error ) ? $this->l('Please select an EU country') : false;
 		}
 
 		$vatNumber = ltrim( $vatNumber, $countryCode );
