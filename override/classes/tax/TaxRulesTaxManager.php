@@ -46,18 +46,17 @@ class TaxRulesTaxManager extends TaxRulesTaxManagerCore
 			$tax_enabled = Configuration::get( 'PS_TAX' );
 		}
 
-		if ( $tax_enabled ) {
+		if ( $tax_enabled && $this->address ) {
 			/** @var Vatchecker $vatchecker */
 			$vatchecker = Module::getInstanceByName('vatchecker');
 			if ( $vatchecker ) {
 
-				// Check if the customer can order without VAT on the selected address.
-				$validVat = $vatchecker->isValidVat( $this->address, false );
-				if ( $validVat ) {
+				// Double-check if the address isn't the same as the origin country.
+				if ( ! $vatchecker->isOriginCountry( $this->address->id_country ) ) {
 
-					// Double-check if the address isn't the same as the origin country.
-					$isOriginCountry = $vatchecker->isOriginCountry( $this->address->id_country );
-					if ( ! $isOriginCountry ) {
+					// Check if the customer can order without VAT on the selected address.
+					$validVat = $vatchecker->isValidVat( $this->address, false );
+					if ( $validVat ) {
 
 						// Disable TAX.
 						$tax_enabled = false;

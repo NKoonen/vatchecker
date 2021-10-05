@@ -417,7 +417,10 @@ class Vatchecker extends Module
 			return;
 		}
 
-		$vatValid = $this->isValidVat( $address, true );
+		$vatValid = false;
+		if ( ! $this->isOriginCountry( $address->id_country ) ) {
+			$vatValid = $this->isValidVat( $address, true );
+		}
 
 		if ( null === $vatValid ) {
 			// Module inactive or VIES server offline.
