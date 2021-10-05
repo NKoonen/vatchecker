@@ -591,10 +591,10 @@ class Vatchecker extends Module
 	 *
 	 * @param array $record {
 	 *     @type int    id_vatchecker
-	 *     @type int    id_address
-	 *     @type int    id_country
+	 *     @type int    id_address (Required)
+	 *     @type int    id_country (Required)
 	 *     @type string company
-	 *     @type string vat_number
+	 *     @type string vat_number (Required)
 	 *     @type bool   valid
 	 *     @type string date_add
 	 *     @type string date_modified
@@ -605,6 +605,15 @@ class Vatchecker extends Module
 	 */
 	private function setVatValidation( $record ) {
 		$table = _DB_PREFIX_ . 'vatchecker';
+
+		// Required fields.
+		if (
+			empty( $record['id_address'] ) ||
+			empty( $record['id_country'] ) ||
+			empty( $record['vat_number'] )
+		) {
+			return false;
+		}
 
 		if ( empty( $record['id_vatchecker'] ) ) {
 			$exists = $this->getVatValidation( $record['id_address'] );
