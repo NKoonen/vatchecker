@@ -445,6 +445,7 @@ class Vatchecker extends Module
 			return true;
 		}
 
+		/** @var CustomerAddressFormCore $form */
 		$form       = $params['form'];
 		$countryId  = $form->getField('id_country')->getValue();
 		if ( ! $form->getField('vat_number') ) {
