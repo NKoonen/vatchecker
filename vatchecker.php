@@ -534,6 +534,13 @@ class Vatchecker extends Module
 	private function setVatValidation( $record ) {
 		$table = _DB_PREFIX_ . 'vatchecker';
 
+		if ( empty( $record['id_vatchecker'] ) ) {
+			$exists = $this->getVatValidation( $record['id_address'], $record['id_country'], $record['vat_number'] );
+			if ( $exists ) {
+				$record['id_vatchecker'] = $exists['id_vatchecker'];
+			}
+		}
+
 		$keys = array();
 		$values = array();
 		foreach ( $record as $key => $value ) {
