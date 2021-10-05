@@ -477,7 +477,18 @@ class Vatchecker extends Module
 		}
 
 		$vatNumber = ltrim( $vatNumber, $countryCode );
-		return $this->checkVies( $countryCode, $vatNumber );
+
+		$valid = $this->checkVies( $countryCode, $vatNumber );
+		if ( is_bool( $valid ) ) {
+			if ( ! $valid && $error ) {
+				// VIES validation returned false.
+				$valid = $this->l('This is not a valid VAT number');
+			}
+		} elseif ( is_string( $valid ) && ! $error ) {
+			// Convert VIES validation error to false.
+			$valid = false;
+		}
+		return $valid;
 	}
 
 	/**
@@ -502,11 +513,11 @@ class Vatchecker extends Module
 			if ( $result->valid === true ) {
 				return true;
 			}
-			return $this->l('This is not a valid VAT number');
+			return false;
 
 		} catch ( Throwable $e ) {
 			if ( Configuration::get( 'VATCHECKER_ALLOW_OFFLINE' ) ) {
-				return true;
+				return null;
 			}
 			return $this->l( 'EU VIES server not responding' );
 		}
