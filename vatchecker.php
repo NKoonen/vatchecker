@@ -216,11 +216,11 @@ class Vatchecker extends Module
 	protected function getConfigFormValues()
 	{
 		$values = array(
-			'VATCHECKER_LIVE_MODE'      => Configuration::get('VATCHECKER_LIVE_MODE', true),
-			'VATCHECKER_REQUIRED'       => Configuration::get('VATCHECKER_REQUIRED', true),
-			'VATCHECKER_ALLOW_OFFLINE'  => Configuration::get('VATCHECKER_ALLOW_OFFLINE', true),
-			'VATCHECKER_ORIGIN_COUNTRY' => Configuration::get('VATCHECKER_ORIGIN_COUNTRY', '0'),
-			'VATCHECKER_NO_TAX_GROUP'   => Configuration::get('VATCHECKER_NO_TAX_GROUP', null),
+			'VATCHECKER_LIVE_MODE'      => Configuration::get( 'VATCHECKER_LIVE_MODE', null, null, null, true ),
+			'VATCHECKER_REQUIRED'       => Configuration::get( 'VATCHECKER_REQUIRED', null, null, null, true ),
+			'VATCHECKER_ALLOW_OFFLINE'  => Configuration::get( 'VATCHECKER_ALLOW_OFFLINE', null, null, null, true ),
+			'VATCHECKER_ORIGIN_COUNTRY' => Configuration::get( 'VATCHECKER_ORIGIN_COUNTRY', null, null, null, '0' ),
+			'VATCHECKER_NO_TAX_GROUP'   => Configuration::get( 'VATCHECKER_NO_TAX_GROUP', null, null, null, null ),
 		);
 
 		$countries = $this->getEUCountries();
