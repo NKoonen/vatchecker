@@ -802,14 +802,6 @@ class Vatchecker extends Module
 	}
 
 	/**
-	 * @since 1.2.1
-	 * @return int|null
-	 */
-	public function getNoTaxGroup() {
-		return Configuration::get('VATCHECKER_NO_TAX_GROUP');
-	}
-
-	/**
 	 * @param Address|int $address
 	 * @return Address|null
 	 */
@@ -821,6 +813,14 @@ class Vatchecker extends Module
 			return $address;
 		}
 		return null;
+	}
+
+	/**
+	 * @since 1.2.1
+	 * @return int|null
+	 */
+	public function getNoTaxGroup() {
+		return Configuration::get('VATCHECKER_NO_TAX_GROUP');
 	}
 
 	/**
