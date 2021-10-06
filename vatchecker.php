@@ -833,6 +833,9 @@ class Vatchecker extends Module
 		if ( ! $customer ) {
 			$customer = $this->context->customer;
 		}
+		if ( ! $this->getNoTaxGroup() ) {
+			return;
+		}
 
 		if ( is_string( $vatValid ) ) {
 			$vatValid = $this->checkVat( $vatValid, $countryId );
