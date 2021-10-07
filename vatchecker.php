@@ -692,10 +692,6 @@ class Vatchecker extends Module
 			return null;
 		}
 
-		if ( ! is_string( $vatNumber ) || 8 > strlen( $vatNumber ) ) {
-			return ( $error ) ? $this->l('VAT number format invalid') : false;
-		}
-
 		if ( is_numeric( $countryCode ) ) {
 			$countryCode = Country::getIsoById( $countryCode );
 		}
@@ -705,6 +701,10 @@ class Vatchecker extends Module
 		}
 
 		$vatNumber = ltrim( $vatNumber, $countryCode );
+
+		if ( ! $this->checkVatFormat( $vatNumber ) ) {
+			return ( $error ) ? $this->l('VAT number format invalid') : false;
+		}
 
 		$valid = $this->checkVies( $countryCode, $vatNumber );
 		if ( is_bool( $valid ) ) {
@@ -717,6 +717,52 @@ class Vatchecker extends Module
 			$valid = false;
 		}
 		return $valid;
+	}
+
+	/**
+	 * Check vat number format before calling VIES API.
+	 *
+	 * @param string $vatNumber
+	 *
+	 * @return bool
+	 */
+	public function checkVatFormat( $vatNumber ) {
+
+		$preg = array(
+			'/(?xi)^(',
+			'AT' => '(AT)?U[0-9]{8}',                              # Austria
+			'BE' => '(BE)?0[0-9]{9}',                              # Belgium
+			'BG' => '(BG)?[0-9]{9,10}',                            # Bulgaria
+			'HR' => '(HR)?[0-9]{11}',                              # Croatia
+			'CY' => '(CY)?[0-9]{8}[A-Z]',                          # Cyprus
+			'CZ' => '(CZ)?[0-9]{8,10}',                            # Czech Republic
+			'DE' => '(DE)?[0-9]{9}',                               # Germany
+			'DK' => '(DK)?[0-9]{8}',                               # Denmark
+			'EE' => '(EE)?[0-9]{9}',                               # Estonia
+			'EL' => '(EL)?[0-9]{9}',                               # Greece
+			'ES' => 'ES[A-Z][0-9]{7}(?:[0-9]|[A-Z])',              # Spain
+			'FI' => '(FI)?[0-9]{8}',                               # Finland
+			'FR' => '(FR)?[0-9A-Z]{2}[0-9]{9}',                    # France
+			//'GB' => '(GB)?([0-9]{9}([0-9]{3})?|[A-Z]{2}[0-9]{3})', # United Kingdom
+			'HU' => '(HU)?[0-9]{8}',                               # Hungary
+			'IE' => '(IE)?[0-9]{7}[A-Z]{1,2}',                     # Ireland
+			'IE2' => '(IE)?[0-9][A-Z][0-9]{5}[A-Z]',               # Ireland (2)
+			'IT' => '(IT)?[0-9]{11}',                              # Italy
+			'LT' => '(LT)?([0-9]{9}|[0-9]{12})',                   # Lithuania
+			'LU' => '(LU)?[0-9]{8}',                               # Luxembourg
+			'LV' => '(LV)?[0-9]{11}',                              # Latvia
+			'MT' => '(MT)?[0-9]{8}',                               # Malta
+			'NL' => '(NL)?[0-9]{9}B[0-9]{2}',                      # Netherlands
+			'PL' => '(PL)?[0-9]{10}',                              # Poland
+			'PT' => '(PT)?[0-9]{9}',                               # Portugal
+			'RO' => '(RO)?[0-9]{2,10}',                            # Romania
+			'SE' => '(SE)?[0-9]{12}',                              # Sweden
+			'SI' => '(SI)?[0-9]{8}',                               # Slovenia
+			'SK' => '(SK)?[0-9]{10}',                              # Slovakia
+			')$/',
+		);
+
+		return (bool) preg_match( implode( '|', $preg ), $vatNumber );
 	}
 
 	/**
