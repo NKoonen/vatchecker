@@ -30,7 +30,18 @@ if (!defined('_PS_VERSION_')) {
 
 class Vatchecker extends Module
 {
+	/**
+	 * Cache for VIES API results.
+	 * @since 2.0.0
+	 * @var array
+	 */
 	private static $cache = array();
+
+	/**
+	 * EU VIES API SOAP url.
+	 * @since 1.0.0
+	 * @var string
+	 */
 	private $_SOAPUrl = 'https://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl';
 
 	/**
@@ -70,6 +81,9 @@ class Vatchecker extends Module
 		'SK' => '(SK)?[0-9]{10}',                              # Slovakia
 	);
 
+	/**
+	 * @inheritDoc
+	 */
 	public function __construct()
 	{
 		$this->name = 'vatchecker';
