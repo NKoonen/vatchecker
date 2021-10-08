@@ -380,7 +380,7 @@ class Vatchecker extends Module
 	 */
 	public function hookActionValidateCustomerAddressForm(&$params)
 	{
-		if ( empty( $params['form'] ) ) {
+		if ( empty( $params['form'] ) || ! Configuration::get( 'VATCHECKER_REQUIRED' ) ) {
 			return true;
 		}
 
@@ -401,7 +401,7 @@ class Vatchecker extends Module
 			return true;
 		}
 
-		if ( true !== $vatValid && Configuration::get( 'VATCHECKER_REQUIRED' ) ) {
+		if ( true !== $vatValid ) {
 			$form->getField('vat_number')->addError( $vatError );
 			return false;
 		}
