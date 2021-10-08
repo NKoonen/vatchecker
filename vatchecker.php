@@ -67,8 +67,8 @@ class Vatchecker extends Module
 	{
 		$this->name = 'vatchecker';
 		$this->tab = 'billing_invoicing';
-		$this->version = '1.3.0';
-		$this->author = 'Inform-All';
+		$this->version = '2.0.0';
+		$this->author = 'Inform-All & Keraweb';
 		$this->need_instance = 1;
 
 		/**
@@ -106,7 +106,7 @@ class Vatchecker extends Module
 	}
 
 	/**
-	 * @since 1.3.0
+	 * @since 2.0.0
 	 * @return bool
 	 */
 	public function installDB()
@@ -411,7 +411,7 @@ class Vatchecker extends Module
 	/**
 	 * Check if an address can order without VAT.
 	 *
-	 * @since 1.3.0
+	 * @since 2.0.0
 	 *
 	 * @param Address $address
 	 *
@@ -433,7 +433,7 @@ class Vatchecker extends Module
 	/**
 	 * Check if a VAT number is valid using the address data.
 	 *
-	 * @since 1.3.0
+	 * @since 2.0.0
 	 *
 	 * @param Address $address
 	 * @param bool    $error   Return error (if any) or null (disabled) instead of boolean.
@@ -521,7 +521,7 @@ class Vatchecker extends Module
 	/**
 	 * Get VAT validation from the database.
 	 *
-	 * @since 1.3.0
+	 * @since 2.0.0
 	 *
 	 * @throws PrestaShopDatabaseException
 	 *
@@ -555,7 +555,7 @@ class Vatchecker extends Module
 	/**
 	 * Update/Set VAT validation in the database.
 	 *
-	 * @since 1.3.0
+	 * @since 2.0.0
 	 *
 	 * @throws PrestaShopDatabaseException
 	 *
@@ -634,7 +634,7 @@ class Vatchecker extends Module
 	 * Checks for valid VAT params and calls VIES API.
 	 *
 	 * @since 1.1.0
-	 * @since 1.3.0 Returns array instead of scalar.
+	 * @since 2.0.0 Returns array instead of scalar.
 	 *
 	 * @param string     $vatNumber
 	 * @param int|string $countryCode
@@ -684,7 +684,7 @@ class Vatchecker extends Module
 
 	/**
 	 * @since 1.0.0
-	 * @since 1.3.0 Returns array instead of scalar.
+	 * @since 2.0.0 Returns array instead of scalar.
 	 *
 	 * @param string $countryCode
 	 * @param string $vatNumber
@@ -741,7 +741,7 @@ class Vatchecker extends Module
 	/**
 	 * Check vat number format before calling VIES API.
 	 *
-	 * @since 1.3.0
+	 * @since 2.0.0
 	 *
 	 * @param string $vatNumber
 	 *
