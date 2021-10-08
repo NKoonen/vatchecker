@@ -553,8 +553,8 @@ class Vatchecker extends Module
 		$vatValid = $checkVat['valid'];
 		$vatError = $checkVat['error'];
 
-		// Make sure it's a boolean without errors.
-		if ( is_bool( $vatValid ) && ! $vatError ) {
+		// Make sure it's a boolean, otherwise the module is offline or the VIES server isn't responding.
+		if ( is_bool( $vatValid ) ) {
 			$result['valid'] = $vatValid;
 			$this->setVatValidation( $result );
 
