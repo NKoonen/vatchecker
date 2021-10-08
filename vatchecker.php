@@ -31,7 +31,6 @@ if (!defined('_PS_VERSION_')) {
 class Vatchecker extends Module
 {
 	private static $cache = array();
-	protected $config_form = false;
 	private $_SOAPUrl = 'https://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl';
 	private $EUCountries = array(
 		'AT',
