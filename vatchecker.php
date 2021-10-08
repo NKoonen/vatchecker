@@ -30,6 +30,7 @@ if (!defined('_PS_VERSION_')) {
 
 class Vatchecker extends Module
 {
+	private static $cache = array();
 	protected $config_form = false;
 	private $_SOAPUrl = 'https://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl';
 	private $EUCountries = array(
@@ -441,16 +442,18 @@ class Vatchecker extends Module
 	 * @return bool|string Optionally returns string or null on error if errors are enabled.
 	 */
 	public function isValidVat( $address, $error = false ) {
-		static $cache = array();
-
 		$address = $this->getAddress( $address );
 		if ( ! $address ) {
 			return false;
 		}
 
-		$cache_key = $address->id . $address->id_country . $address->vat_number;
+		$checkVat  = null;
+		$cache_key = $address->id_country . $address->vat_number;
+		if ( isset( self::$cache[ $cache_key ] ) ) {
+			$checkVat = self::$cache[ $cache_key ];
+		}
 
-		if ( ! isset( $cache[ $cache_key ] ) ) {
+		if ( ! $checkVat ) {
 
 			/**
 			 * @var array $result {
@@ -471,7 +474,7 @@ class Vatchecker extends Module
 
 				// VIES API already ran successfully within 24 hours.
 				if ( strtotime( $result['date_modified'] ) > strtotime( '-1 day' ) ) {
-					$cache[ $cache_key ] = array(
+					$checkVat = array(
 						'valid' => (bool) $result['valid'],
 						'error' => '',
 					);
@@ -496,14 +499,11 @@ class Vatchecker extends Module
 					$result['valid'] = $checkVat['valid'];
 					$this->setVatValidation( $result );
 				}
-
-				$cache[ $cache_key ] = $checkVat;
 			}
-
 		}
 
-		$vatValid = $cache[ $cache_key ]['valid'];
-		$vatError = $cache[ $cache_key ]['error'];
+		$vatValid = $checkVat['valid'];
+		$vatError = $checkVat['error'];
 
 		if ( $error ) {
 			if ( $vatError ) {
@@ -645,6 +645,10 @@ class Vatchecker extends Module
 	 * }
 	 */
 	public function checkVat( $vatNumber, $countryCode ) {
+		$cache_key = $countryCode . $vatNumber;
+		if ( isset( self::$cache[ $cache_key ] ) ) {
+			return self::$cache[ $cache_key ];
+		}
 
 		if ( ! Configuration::get( 'VATCHECKER_LIVE_MODE' ) ) {
 			return array(
@@ -663,6 +667,7 @@ class Vatchecker extends Module
 
 		if ( ! $countryCode || ! $this->isEUCountry( $countryCode ) ) {
 			$return['error'] = $this->l( 'Please select an EU country' );
+			self::$cache[ $cache_key ] = $return;
 			return $return;
 		}
 
@@ -670,16 +675,19 @@ class Vatchecker extends Module
 
 		if ( ! $vatNumber ) {
 			$return['error'] = $this->l( 'Please provide a VAT number' );
+			self::$cache[ $cache_key ] = $return;
 			return $return;
 		}
 
 		if ( ! $this->isVatFormat( $vatNumber ) ) {
 			$return['error'] = $this->l( 'VAT number format invalid' );
+			self::$cache[ $cache_key ] = $return;
 			return $return;
 		}
 
 		// Format validated, make the call!
-		return $this->checkVies( $countryCode, $vatNumber );
+		self::$cache[ $cache_key ] = $this->checkVies( $countryCode, $vatNumber );
+		return self::$cache[ $cache_key ];
 	}
 
 	/**
@@ -695,6 +703,7 @@ class Vatchecker extends Module
 	 * }
 	 */
 	protected function checkVies( $countryCode, $vatNumber ) {
+		// Uses own static cache.
 		static $cache = array();
 		$cache_key = $countryCode . $vatNumber;
 		if ( isset( $cache[ $cache_key ] ) ) {
