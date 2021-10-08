@@ -457,7 +457,9 @@ class Vatchecker extends Module
 		}
 		$vatNumber = $form->getField('vat_number')->getValue();
 
-		$vatValid = $this->checkVat( $vatNumber, $countryId, true );
+		$checkVat = $this->checkVat( $vatNumber, $countryId );
+		$vatValid = $checkVat['valid'];
+		$vatError = $checkVat['error'];
 
 		if ( null === $vatValid ) {
 			// Module inactive or VIES server offline.
@@ -467,7 +469,7 @@ class Vatchecker extends Module
 		$this->updateNoTaxGroup( $vatValid, $countryId, $this->context->customer );
 
 		if ( true !== $vatValid && Configuration::get( 'VATCHECKER_REQUIRED' ) ) {
-			$form->getField('vat_number')->addError( $vatValid );
+			$form->getField('vat_number')->addError( $vatError );
 			return false;
 		}
 
@@ -502,9 +504,9 @@ class Vatchecker extends Module
 	 * @since 1.3.0
 	 *
 	 * @param Address $address
-	 * @param bool $error Return error (if any) instead of boolean.
+	 * @param bool    $error   Return error (if any) or null (disabled) instead of boolean.
 	 *
-	 * @return bool|string Optionally returns string on error if errors are enabled.
+	 * @return bool|string Optionally returns string or null on error if errors are enabled.
 	 */
 	public function isValidVat( $address, $error = false ) {
 		$address = $this->getAddress( $address );
@@ -547,21 +549,29 @@ class Vatchecker extends Module
 			);
 		}
 
-		$vatCheck = $this->checkVat( $address->vat_number, $address->id_country, false );
+		$checkVat = $this->checkVat( $address->vat_number, $address->id_country );
+		$vatValid = $checkVat['valid'];
+		$vatError = $checkVat['error'];
 
-		// Make sure it's a boolean, otherwise it's an error so we don't want to update the database.
-		if ( is_bool( $vatCheck ) && $this->isVatFormat( $address->vat_number ) ) {
-			$result['valid'] = $vatCheck;
+		// Make sure it's a boolean without errors.
+		if ( is_bool( $vatValid ) && ! $vatError ) {
+			$result['valid'] = $vatValid;
 			$this->setVatValidation( $result );
 
-			return $vatCheck;
+			return $vatValid;
 		}
 
-		if ( ! $error ) {
-			// Convert null to true: module offline.
-			return null === $vatCheck;
+		if ( $error ) {
+			if ( $vatError ) {
+				return $vatError;
+			}
+		} else {
+			// Convert null to true: module or VIES offline.
+			if ( null === $vatValid ) {
+				$vatValid = true;
+			}
 		}
-		return $vatCheck;
+		return $vatValid;
 	}
 
 	/**
@@ -680,59 +690,67 @@ class Vatchecker extends Module
 	 * Checks for valid VAT params and calls VIES API.
 	 *
 	 * @since 1.1.0
+	 * @since 1.3.0 Returns array instead of scalar.
 	 *
 	 * @param string     $vatNumber
 	 * @param int|string $countryCode
-	 * @param bool       $error  Return error string if errored?
 	 *
-	 * @return bool|null|string Optionally returns string on error if errors are enabled.
-	 *                          Otherwise a boolean or null (disabled).
+	 * @return array {
+	 *     @type bool|null $valid Boolean or null (disabled).
+	 *     @type string    $error Error notification (if any).
+	 * }
 	 */
-	public function checkVat( $vatNumber, $countryCode = null, $error = true ) {
+	public function checkVat( $vatNumber, $countryCode = null ) {
 
 		if ( ! Configuration::get( 'VATCHECKER_LIVE_MODE' ) ) {
-			return null;
+			return array(
+				'valid' => null,
+				'error' => '',
+			);
 		}
+		$return = array(
+			'valid' => false,
+			'error' => '',
+		);
 
 		if ( is_numeric( $countryCode ) ) {
 			$countryCode = Country::getIsoById( $countryCode );
 		}
 
 		if ( ! $this->isEUCountry( $countryCode ) ) {
-			return ( $error ) ? $this->l('Please select an EU country') : false;
+			$return['error'] = $this->l( 'Please select an EU country' );
+			return $return;
 		}
 
 		$vatNumber = ltrim( $vatNumber, $countryCode );
 
 		if ( ! $this->isVatFormat( $vatNumber ) ) {
-			return ( $error ) ? $this->l('VAT number format invalid') : false;
+			$return['error'] = $this->l( 'VAT number format invalid' );
+			return $return;
 		}
 
 		// Format validated, make the call!
-		$valid = $this->checkVies( $countryCode, $vatNumber );
-
-		if ( is_bool( $valid ) ) {
-			if ( ! $valid && $error ) {
-				// VIES validation returned false.
-				$valid = $this->l('This is not a valid VAT number');
-			}
-		} elseif ( is_string( $valid ) && ! $error ) {
-			// Convert VIES validation error to false.
-			$valid = false;
-		}
-		return $valid;
+		return $this->checkVies( $countryCode, $vatNumber );
 	}
 
 	/**
-	 * @since 1.0
+	 * @since 1.0.0
+	 * @since 1.3.0 Returns array instead of scalar.
 	 *
 	 * @param string $countryCode
 	 * @param string $vatNumber
 	 *
-	 * @return bool|null|string
+	 * @return array {
+	 *     @type bool|null $valid Boolean or null (disabled).
+	 *     @type string    $error Error notification (if any).
+	 * }
 	 */
-	protected function checkVies( $countryCode, $vatNumber )
-	{
+	protected function checkVies( $countryCode, $vatNumber ) {
+		$return = array(
+			'valid' => false,
+			'error' => '',
+		);
+
 		try {
 
 			$client = new SoapClient($this->_SOAPUrl);
@@ -745,18 +763,22 @@ class Vatchecker extends Module
 			$result = $client->__soapCall('checkVat', array($params));
 
 			if ( $result->valid === true ) {
-				return true;
+				$return['valid'] = true;
+			} else {
+				$return['error'] = $this->l('This is not a valid VAT number');
 			}
-			return false;
 
 		} catch ( Throwable $e ) {
-			if ( Configuration::get( 'VATCHECKER_ALLOW_OFFLINE' ) ) {
-				return null;
-			}
+			
+			//$return['error'] = $this->l( $e->getMessage() );
+			$return['error'] = $this->l( 'EU VIES server not responding' );
 
-			//return $this->l( $e->getMessage() );
-			return $this->l( 'EU VIES server not responding' );
+			if ( Configuration::get( 'VATCHECKER_ALLOW_OFFLINE' ) ) {
+				$return['valid'] = null;
+			}
 		}
+
+		return $return;
 	}
 
 	/**
@@ -893,6 +915,7 @@ class Vatchecker extends Module
 
 		if ( is_string( $vatValid ) ) {
 			$vatValid = $this->checkVat( $vatValid, $countryId );
+			$vatValid = $vatValid['valid'];
 
 			if ( null === $vatValid ) {
 				// Module inactive.
