@@ -439,7 +439,8 @@ class Vatchecker extends Module
 	 *
 	 * @return bool
 	 */
-	public function canOrderWithoutVat( $address ) {
+	public function canOrderWithoutVat( $address )
+	{
 		$address = $this->getAddress( $address );
 		if ( ! $address ) {
 			return false;
@@ -462,7 +463,8 @@ class Vatchecker extends Module
 	 *
 	 * @return bool|string Optionally returns string or null on error if errors are enabled.
 	 */
-	public function isValidVat( $address, $error = false ) {
+	public function isValidVat( $address, $error = false )
+	{
 		$address = $this->getAddress( $address );
 		if ( ! $address ) {
 			return false;
@@ -550,7 +552,8 @@ class Vatchecker extends Module
 	 *
 	 * @return false|mixed|null
 	 */
-	private function getVatValidation( $address ) {
+	private function getVatValidation( $address )
+	{
 		$address = $this->getAddress( $address );
 		if ( ! $address ) {
 			return null;
@@ -594,7 +597,8 @@ class Vatchecker extends Module
 	 *
 	 * @return array|bool|mysqli_result|PDOStatement|resource|null
 	 */
-	private function setVatValidation( $record ) {
+	private function setVatValidation( $record )
+	{
 		$table = _DB_PREFIX_ . 'vatchecker';
 
 		// Required fields.
@@ -665,7 +669,8 @@ class Vatchecker extends Module
 	 *     @type string    $error Error notification (if any).
 	 * }
 	 */
-	public function checkVat( $vatNumber, $countryCode ) {
+	public function checkVat( $vatNumber, $countryCode )
+	{
 		$cache_key = $countryCode . $vatNumber;
 		if ( isset( self::$cache[ $cache_key ] ) ) {
 			return self::$cache[ $cache_key ];
@@ -723,7 +728,8 @@ class Vatchecker extends Module
 	 *     @type string    $error Error notification (if any).
 	 * }
 	 */
-	protected function checkVies( $countryCode, $vatNumber ) {
+	protected function checkVies( $countryCode, $vatNumber )
+	{
 		// Uses own static cache.
 		static $cache = array();
 		$cache_key = $countryCode . $vatNumber;
@@ -777,7 +783,8 @@ class Vatchecker extends Module
 	 *
 	 * @return bool
 	 */
-	public function isVatFormat( $vatNumber ) {
+	public function isVatFormat( $vatNumber )
+	{
 		if ( ! $vatNumber ) {
 			return false;
 		}
@@ -793,7 +800,8 @@ class Vatchecker extends Module
 	 * @param int|string $countryCode
 	 * @return bool
 	 */
-	public function isEUCountry( $countryCode ) {
+	public function isEUCountry( $countryCode )
+	{
 		if ( is_numeric( $countryCode ) ) {
 			$countryCode = Country::getIsoById( $countryCode );
 		}
@@ -805,7 +813,8 @@ class Vatchecker extends Module
 	 * @param int|string|Country $countryId
 	 * @return bool
 	 */
-	public function isOriginCountry( $countryId ) {
+	public function isOriginCountry( $countryId )
+	{
 		static $cache = array();
 
 		if ( $countryId instanceof Country ) {
@@ -836,7 +845,8 @@ class Vatchecker extends Module
 	/**
 	 * @return int|null
 	 */
-	public function getOriginCountry() {
+	public function getOriginCountry()
+	{
 		static $origin_country = null;
 		if ( null === $origin_country ) {
 			$origin_country = (int) Configuration::get( 'VATCHECKER_ORIGIN_COUNTRY' );
@@ -848,7 +858,8 @@ class Vatchecker extends Module
 	 * @since 1.1.0
 	 * @return array
 	 */
-	public function getEUCountries() {
+	public function getEUCountries()
+	{
 		static $countries = array();
 		if ( $countries ) {
 			return $countries;
@@ -870,7 +881,8 @@ class Vatchecker extends Module
 	 * @param Address|int $address
 	 * @return Address|null
 	 */
-	public function getAddress( $address ) {
+	public function getAddress( $address )
+	{
 		if ( is_numeric( $address ) ) {
 			$address = new Address( $address );
 		}
