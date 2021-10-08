@@ -365,7 +365,7 @@ class Vatchecker extends Module
 						'type'    => 'select',
 						'desc'    => $this->l('Select shops country'),
 						'name'    => 'VATCHECKER_ORIGIN_COUNTRY',
-						'label'   => $this->l('Origin'),
+						'label'   => $this->l('Origin country'),
 						'options' => array(
 							'query' => array_merge( $select_country, $countries ),
 							'id'    => 'id',
@@ -377,7 +377,7 @@ class Vatchecker extends Module
 						'type'     => 'checkbox',
 						'desc'     => $this->l('Select EU countries that can order without VAT'),
 						'name'     => 'VATCHECKER_EU_COUNTRIES',
-						'label'    => $this->l('Enabled EU Countries'),
+						'label'    => $this->l('Enabled EU countries'),
 						'multiple' => true,
 						'values'   => array(
 							'query' => $countries,
