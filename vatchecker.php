@@ -800,24 +800,6 @@ class Vatchecker extends Module
 
 	/**
 	 * @since 1.1.0
-	 * @return array
-	 */
-	public function getEUCountries() {
-		$countries = json_decode( Configuration::get( 'VATCHECKER_EU_COUNTRIES' ), true );
-		if ( ! $countries ) {
-			$all_countries = Country::getCountries( $this->context->language->id );
-			$countries     = array();
-			foreach ( $all_countries as $country ) {
-				if ( in_array( $country['iso_code'], $this->EUCountries, true ) ) {
-					$countries[ $country['id_country'] ] = $country['iso_code'];
-				}
-			}
-		}
-		return $countries;
-	}
-
-	/**
-	 * @since 1.1.0
 	 * @param int|string $countryCode
 	 * @return bool
 	 */
@@ -872,6 +854,28 @@ class Vatchecker extends Module
 			$origin_country = (int) Configuration::get( 'VATCHECKER_ORIGIN_COUNTRY' );
 		}
 		return $origin_country;
+	}
+
+	/**
+	 * @since 1.1.0
+	 * @return array
+	 */
+	public function getEUCountries() {
+		static $countries = array();
+		if ( $countries ) {
+			return $countries;
+		}
+		$countries = json_decode( Configuration::get( 'VATCHECKER_EU_COUNTRIES' ), true );
+		if ( ! $countries ) {
+			$all_countries = Country::getCountries( $this->context->language->id );
+			$countries     = array();
+			foreach ( $all_countries as $country ) {
+				if ( in_array( $country['iso_code'], $this->EUCountries, true ) ) {
+					$countries[ $country['id_country'] ] = $country['iso_code'];
+				}
+			}
+		}
+		return $countries;
 	}
 
 	/**
