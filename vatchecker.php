@@ -509,66 +509,78 @@ class Vatchecker extends Module
 	 * @return bool|string Optionally returns string or null on error if errors are enabled.
 	 */
 	public function isValidVat( $address, $error = false ) {
+		static $cache = array();
+
 		$address = $this->getAddress( $address );
 		if ( ! $address ) {
 			return false;
 		}
 
-		/**
-		 * @var array $result {
-		 *     @type int    id_vatchecker
-		 *     @type int    id_address
-		 *     @type int    id_country
-		 *     @type string company
-		 *     @type string vat_number
-		 *     @type bool   valid
-		 *     @type string date_add
-		 *     @type string date_modified
-		 *     @type string date_valid_vat
-		 * }
-		 */
-		$result = $this->getVatValidation( $address );
+		$cache_key = $address->id . $address->id_country . $address->vat_number;
 
-		if ( $result ) {
+		if ( ! isset( $cache[ $cache_key ] ) ) {
 
-			// VIES API already ran successfully within 24 hours.
-			if ( strtotime( $result['date_modified'] ) > strtotime( '-1 day' ) ) {
-				return (bool) $result['valid'];
+			/**
+			 * @var array $result {
+			 *     @type int    id_vatchecker
+			 *     @type int    id_address
+			 *     @type int    id_country
+			 *     @type string company
+			 *     @type string vat_number
+			 *     @type bool   valid
+			 *     @type string date_add
+			 *     @type string date_modified
+			 *     @type string date_valid_vat
+			 * }
+			 */
+			$result = $this->getVatValidation( $address );
+
+			if ( $result ) {
+
+				// VIES API already ran successfully within 24 hours.
+				if ( strtotime( $result['date_modified'] ) > strtotime( '-1 day' ) ) {
+					$cache[ $cache_key ] = array(
+						'valid' => (bool) $result['valid'],
+						'error' => '',
+					);
+				}
+
+			} else {
+
+				$result = array(
+					'id_address'     => $address->id,
+					'id_country'     => $address->id_country,
+					'company'        => $address->company,
+					'vat_number'     => $address->vat_number,
+					'valid'          => false,
+					'date_add'       => '',
+					'date_modified'  => '',
+					'date_valid_vat' => '',
+				);
+
+				$checkVat = $this->checkVat( $address->vat_number, $address->id_country );
+
+				if ( is_bool( $checkVat['valid'] ) ) {
+					$result['valid'] = $checkVat['valid'];
+					$this->setVatValidation( $result );
+				}
+
+				$cache[ $cache_key ] = $checkVat;
 			}
 
-		} else {
-			$result = array(
-				'id_address'     => $address->id,
-				'id_country'     => $address->id_country,
-				'company'        => $address->company,
-				'vat_number'     => $address->vat_number,
-				'valid'          => false,
-				'date_add'       => '',
-				'date_modified'  => '',
-				'date_valid_vat' => '',
-			);
 		}
 
-		$checkVat = $this->checkVat( $address->vat_number, $address->id_country );
-		$vatValid = $checkVat['valid'];
-		$vatError = $checkVat['error'];
-
-		// Make sure it's a boolean, otherwise the module is offline or the VIES server isn't responding.
-		if ( is_bool( $vatValid ) ) {
-			$result['valid'] = $vatValid;
-			$this->setVatValidation( $result );
-
-			return $vatValid;
-		}
+		$vatValid = $cache[ $cache_key ]['valid'];
+		$vatError = $cache[ $cache_key ]['error'];
 
 		if ( $error ) {
 			if ( $vatError ) {
 				return $vatError;
 			}
 		} else {
-			// Convert null to true: module or VIES offline.
+			// Force boolean return: module or VIES offline.
 			if ( null === $vatValid ) {
-				$vatValid = true;
+				return true;
 			}
 		}
 		return $vatValid;
