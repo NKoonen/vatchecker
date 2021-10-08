@@ -412,7 +412,7 @@ class Vatchecker extends Module
 		}
 
 		$address   = new Address( $address_id );
-		$cache_key = $address_id;
+		$cache_key = $address_id . $address->id_country . $address->vat_number;
 
 		if ( isset( $cache[ $cache_key ] ) ) {
 			$vatValid = true === $cache[ $cache_key ];
