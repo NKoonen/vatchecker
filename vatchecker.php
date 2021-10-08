@@ -702,7 +702,7 @@ class Vatchecker extends Module
 
 		$vatNumber = ltrim( $vatNumber, $countryCode );
 
-		if ( ! $this->checkVatFormat( $vatNumber ) ) {
+		if ( ! $this->isVatFormat( $vatNumber ) ) {
 			return ( $error ) ? $this->l('VAT number format invalid') : false;
 		}
 
@@ -722,11 +722,13 @@ class Vatchecker extends Module
 	/**
 	 * Check vat number format before calling VIES API.
 	 *
+	 * @since 1.3.0
+	 *
 	 * @param string $vatNumber
 	 *
 	 * @return bool
 	 */
-	public function checkVatFormat( $vatNumber ) {
+	public function isVatFormat( $vatNumber ) {
 
 		$preg = array(
 			'/(?xi)^(',
