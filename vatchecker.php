@@ -751,6 +751,12 @@ class Vatchecker extends Module
 	 * }
 	 */
 	protected function checkVies( $countryCode, $vatNumber ) {
+		static $cache = array();
+		$cache_key = $countryCode . $vatNumber;
+		if ( isset( $cache[ $cache_key ] ) ) {
+			return $cache[ $cache_key ];
+		}
+
 		$return = array(
 			'valid' => false,
 			'error' => '',
@@ -782,6 +788,8 @@ class Vatchecker extends Module
 				$return['valid'] = null;
 			}
 		}
+
+		$cache[ $cache_key ] = $return;
 
 		return $return;
 	}
