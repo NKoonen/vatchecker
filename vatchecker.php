@@ -446,6 +446,10 @@ class Vatchecker extends Module
 			return false;
 		}
 
+		if ( ! $this->isEnabledCountry( $address->id_country ) ) {
+			return false;
+		}
+
 		if ( $this->isOriginCountry( $address->id_country ) ) {
 			return false;
 		}
