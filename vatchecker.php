@@ -217,7 +217,7 @@ class Vatchecker extends Module
 		}
 
 		$eu_countries = array();
-		$countries    = Country::getCountries($this->context->language->id);
+		$countries    = $this->getEUCountries();
 		foreach ( $countries as $country ) {
 			$id = $country['id_country'];
 			if ( Tools::getValue( 'VATCHECKER_EU_COUNTRIES_' . $id ) ) {
@@ -240,7 +240,7 @@ class Vatchecker extends Module
 			'VATCHECKER_ORIGIN_COUNTRY' => Configuration::get( 'VATCHECKER_ORIGIN_COUNTRY', null, null, null, '0' ),
 		);
 
-		$countries = $this->getEUCountries();
+		$countries = $this->getEnabledCountries( false );
 		foreach ( $countries as $id => $iso ) {
 			$values['VATCHECKER_EU_COUNTRIES_' . $id] = true;
 		}
@@ -273,7 +273,7 @@ class Vatchecker extends Module
 			'id_language'  => $this->context->language->id,
 		);
 
-		return $helper->generateForm(array($this->getConfigForm()));
+		return $helper->generateForm( array( $this->getConfigForm() ) );
 	}
 
 	/**
@@ -281,7 +281,7 @@ class Vatchecker extends Module
 	 */
 	protected function getConfigForm()
 	{
-		$countries = Country::getCountries($this->context->language->id);
+		$countries = $this->getEUCountries( false );
 		foreach ($countries as $key => $country) {
 			$countries[ $key ] = array(
 				'id'    => $country['id_country'],
@@ -375,9 +375,9 @@ class Vatchecker extends Module
 					array(
 						'col'      => 3,
 						'type'     => 'checkbox',
-						'desc'     => $this->l('Select EU countries'),
+						'desc'     => $this->l('Select EU countries that can order without VAT'),
 						'name'     => 'VATCHECKER_EU_COUNTRIES',
-						'label'    => $this->l('EU Countries'),
+						'label'    => $this->l('Enabled EU Countries'),
 						'multiple' => true,
 						'values'   => array(
 							'query' => $countries,
@@ -796,6 +796,29 @@ class Vatchecker extends Module
 	}
 
 	/**
+	 * @since 1.2.2
+	 * @param int|string|Country $countryId
+	 * @return bool
+	 */
+	public function isOriginCountry( $countryId )
+	{
+		return ( $this->getOriginCountryId() === $this->getCountryId( $countryId ) );
+	}
+
+	/**
+	 * @since 2.0.0
+	 * @param int|string $countryCode
+	 * @return bool
+	 */
+	public function isEnabledCountry( $countryCode )
+	{
+		if ( is_numeric( $countryCode ) ) {
+			$countryCode = Country::getIsoById( $countryCode );
+		}
+		return in_array( $countryCode, $this->getEnabledCountries() );
+	}
+
+	/**
 	 * @since 1.1.0
 	 * @param int|string $countryCode
 	 * @return bool
@@ -809,75 +832,95 @@ class Vatchecker extends Module
 	}
 
 	/**
-	 * @since 1.2.2
-	 * @param int|string|Country $countryId
-	 * @return bool
-	 */
-	public function isOriginCountry( $countryId )
-	{
-		static $cache = array();
-
-		if ( $countryId instanceof Country ) {
-			$countryId = $countryId->id;
-		}
-
-		if ( isset( $cache[ $countryId ] ) ) {
-			return $cache[ $countryId ];
-		}
-
-		if ( ! is_numeric( $countryId ) ) {
-			if ( is_string( $countryId ) ) {
-				$countryId = Country::getByIso( $countryId );
-				if ( is_array( $countryId ) && isset( $country['id_country'] ) ) {
-					$countryId = $country['id_country'];
-				}
-			}
-			if ( ! is_numeric( $countryId ) ) {
-				$cache[ $countryId ] = false;
-				return false;
-			}
-		}
-
-		$cache[ $countryId ] = ( $this->getOriginCountry() === (int) $countryId );
-		return $cache[ $countryId ];
-	}
-
-	/**
+	 * @since 2.0.0
 	 * @return int|null
 	 */
-	public function getOriginCountry()
+	public function getOriginCountryId( $cache = true )
 	{
 		static $origin_country = null;
-		if ( null === $origin_country ) {
+		if ( ! $cache || null === $origin_country ) {
 			$origin_country = (int) Configuration::get( 'VATCHECKER_ORIGIN_COUNTRY' );
 		}
 		return $origin_country;
 	}
 
 	/**
-	 * @since 1.1.0
+	 * @since 2.0.0
 	 * @return array
 	 */
-	public function getEUCountries()
+	public function getEnabledCountries( $cache = true )
 	{
 		static $countries = array();
-		if ( $countries ) {
+		if ( $cache && $countries ) {
 			return $countries;
 		}
 		$countries = json_decode( Configuration::get( 'VATCHECKER_EU_COUNTRIES' ), true );
 		if ( ! $countries ) {
-			$all_countries = Country::getCountries( $this->context->language->id );
-			$countries     = array();
-			foreach ( $all_countries as $country ) {
-				if ( array_key_exists( $country['iso_code'], $this->euVatFormats ) ) {
-					$countries[ $country['id_country'] ] = $country['iso_code'];
-				}
+			foreach ( $this->getEUCountries() as $country ) {
+				$countries[ $country['id_country'] ] = $country['iso_code'];
 			}
 		}
 		return $countries;
 	}
 
 	/**
+	 * @since 1.1.0
+	 * @return array
+	 */
+	public function getEUCountries( $cache = true )
+	{
+		static $countries = array();
+		if ( $cache && $countries ) {
+			return $countries;
+		}
+		$all_countries = Country::getCountries( $this->context->language->id );
+		$countries     = array();
+		foreach ( $all_countries as $country ) {
+			if ( array_key_exists( $country['iso_code'], $this->euVatFormats ) ) {
+				//$country['vat_format'] = $this->euVatFormats[ $country['iso_code'] ];
+				$countries[ $country['id_country'] ] = $country;
+			}
+		}
+		return $countries;
+	}
+
+	/**
+	 * Get country ID. Wrapper for Country::getByIso since it doesn't utilize cache.
+	 *
+	 * @param mixed $country
+	 *
+	 * @return int
+	 */
+	public function getCountryId( $country )
+	{
+		static $cache = array();
+
+		if ( $country instanceof Country ) {
+			return $country->id;
+		}
+
+		if ( isset( $cache[ $country ] ) ) {
+			return $cache[ $country ];
+		}
+
+		if ( ! is_numeric( $country ) ) {
+			if ( is_string( $country ) ) {
+				$countryId = Country::getByIso( $country );
+				if ( is_array( $countryId ) && isset( $countryId['id_country'] ) ) {
+					$countryId = $countryId['id_country'];
+				}
+			}
+			if ( ! is_numeric( $countryId ) ) {
+				$cache[ $country ] = null;
+				return false;
+			}
+		}
+		$cache[ $country ] = (int) $countryId;
+		return $cache[ $country ];
+	}
+
+	/**
+	 * @since 2.0.0
 	 * @param Address|int $address
 	 * @return Address|null
 	 */
