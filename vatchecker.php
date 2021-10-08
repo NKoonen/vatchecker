@@ -32,35 +32,42 @@ class Vatchecker extends Module
 {
 	private static $cache = array();
 	private $_SOAPUrl = 'https://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl';
-	private $EUCountries = array(
-		'AT',
-		'BE',
-		'BG',
-		'CY',
-		'CZ',
-		'DE',
-		'DK',
-		'EE',
-		'GR',
-		'ES',
-		'FI',
-		'FR',
-		//'GB', // Brexit!
-		'HR',
-		'HU',
-		'IE',
-		'IT',
-		'LT',
-		'LU',
-		'LV',
-		'MT',
-		'NL',
-		'PL',
-		'PT',
-		'RO',
-		'SE',
-		'SI',
-		'SK',
+
+	/**
+	 * A list of all EU countries and their VAT formats.
+	 * @since 2.0.0
+	 * @var string[]
+	 */
+	private $euVatFormats = array(
+		'AT' => '(AT)?U[0-9]{8}',                              # Austria
+		'BE' => '(BE)?0[0-9]{9}',                              # Belgium
+		'BG' => '(BG)?[0-9]{9,10}',                            # Bulgaria
+		'CY' => '(CY)?[0-9]{8}[A-Z]',                          # Cyprus
+		'CZ' => '(CZ)?[0-9]{8,10}',                            # Czech Republic
+		'DE' => '(DE)?[0-9]{9}',                               # Germany
+		'DK' => '(DK)?[0-9]{8}',                               # Denmark
+		'EE' => '(EE)?[0-9]{9}',                               # Estonia
+		'GR' => '(EL)?[0-9]{9}',                               # Greece
+		'ES' => 'ES[A-Z][0-9]{7}(?:[0-9]|[A-Z])',              # Spain
+		'FI' => '(FI)?[0-9]{8}',                               # Finland
+		'FR' => '(FR)?[0-9A-Z]{2}[0-9]{9}',                    # France
+		//'GB' => '(GB)?([0-9]{9}([0-9]{3})?|[A-Z]{2}[0-9]{3})', # United Kingdom // Brexit!
+		'HR' => '(HR)?[0-9]{11}',                              # Croatia
+		'HU' => '(HU)?[0-9]{8}',                               # Hungary
+		'IE' => '(IE)?[0-9]{7}[A-Z]{1,2}',                     # Ireland
+		'IE2' => '(IE)?[0-9][A-Z][0-9]{5}[A-Z]',               # Ireland (2)
+		'IT' => '(IT)?[0-9]{11}',                              # Italy
+		'LT' => '(LT)?([0-9]{9}|[0-9]{12})',                   # Lithuania
+		'LU' => '(LU)?[0-9]{8}',                               # Luxembourg
+		'LV' => '(LV)?[0-9]{11}',                              # Latvia
+		'MT' => '(MT)?[0-9]{8}',                               # Malta
+		'NL' => '(NL)?[0-9]{9}B[0-9]{2}',                      # Netherlands
+		'PL' => '(PL)?[0-9]{10}',                              # Poland
+		'PT' => '(PT)?[0-9]{9}',                               # Portugal
+		'RO' => '(RO)?[0-9]{2,10}',                            # Romania
+		'SE' => '(SE)?[0-9]{12}',                              # Sweden
+		'SI' => '(SI)?[0-9]{8}',                               # Slovenia
+		'SK' => '(SK)?[0-9]{10}',                              # Slovakia
 	);
 
 	public function __construct()
@@ -761,41 +768,10 @@ class Vatchecker extends Module
 			return false;
 		}
 
-		$preg = array(
-			'/(?xi)^(',
-			'AT' => '(AT)?U[0-9]{8}',                              # Austria
-			'BE' => '(BE)?0[0-9]{9}',                              # Belgium
-			'BG' => '(BG)?[0-9]{9,10}',                            # Bulgaria
-			'HR' => '(HR)?[0-9]{11}',                              # Croatia
-			'CY' => '(CY)?[0-9]{8}[A-Z]',                          # Cyprus
-			'CZ' => '(CZ)?[0-9]{8,10}',                            # Czech Republic
-			'DE' => '(DE)?[0-9]{9}',                               # Germany
-			'DK' => '(DK)?[0-9]{8}',                               # Denmark
-			'EE' => '(EE)?[0-9]{9}',                               # Estonia
-			'EL' => '(EL)?[0-9]{9}',                               # Greece
-			'ES' => 'ES[A-Z][0-9]{7}(?:[0-9]|[A-Z])',              # Spain
-			'FI' => '(FI)?[0-9]{8}',                               # Finland
-			'FR' => '(FR)?[0-9A-Z]{2}[0-9]{9}',                    # France
-			//'GB' => '(GB)?([0-9]{9}([0-9]{3})?|[A-Z]{2}[0-9]{3})', # United Kingdom
-			'HU' => '(HU)?[0-9]{8}',                               # Hungary
-			'IE' => '(IE)?[0-9]{7}[A-Z]{1,2}',                     # Ireland
-			'IE2' => '(IE)?[0-9][A-Z][0-9]{5}[A-Z]',               # Ireland (2)
-			'IT' => '(IT)?[0-9]{11}',                              # Italy
-			'LT' => '(LT)?([0-9]{9}|[0-9]{12})',                   # Lithuania
-			'LU' => '(LU)?[0-9]{8}',                               # Luxembourg
-			'LV' => '(LV)?[0-9]{11}',                              # Latvia
-			'MT' => '(MT)?[0-9]{8}',                               # Malta
-			'NL' => '(NL)?[0-9]{9}B[0-9]{2}',                      # Netherlands
-			'PL' => '(PL)?[0-9]{10}',                              # Poland
-			'PT' => '(PT)?[0-9]{9}',                               # Portugal
-			'RO' => '(RO)?[0-9]{2,10}',                            # Romania
-			'SE' => '(SE)?[0-9]{12}',                              # Sweden
-			'SI' => '(SI)?[0-9]{8}',                               # Slovenia
-			'SK' => '(SK)?[0-9]{10}',                              # Slovakia
-			')$/',
-		);
+		$formats = implode( '|', $this->euVatFormats );
+		$preg    = '/(?xi)^(' . $formats . ')$/';
 
-		return (bool) preg_match( implode( '|', $preg ), $vatNumber );
+		return (bool) preg_match( $preg, $vatNumber );
 	}
 
 	/**
@@ -804,11 +780,9 @@ class Vatchecker extends Module
 	 * @return bool
 	 */
 	public function isEUCountry( $countryCode ) {
-
 		if ( is_numeric( $countryCode ) ) {
 			$countryCode = Country::getIsoById( $countryCode );
 		}
-
 		return in_array( $countryCode, $this->getEUCountries() );
 	}
 
@@ -870,7 +844,7 @@ class Vatchecker extends Module
 			$all_countries = Country::getCountries( $this->context->language->id );
 			$countries     = array();
 			foreach ( $all_countries as $country ) {
-				if ( in_array( $country['iso_code'], $this->EUCountries, true ) ) {
+				if ( array_key_exists( $country['iso_code'], $this->euVatFormats ) ) {
 					$countries[ $country['id_country'] ] = $country['iso_code'];
 				}
 			}
