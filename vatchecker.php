@@ -677,6 +677,8 @@ class Vatchecker extends Module
 	}
 
 	/**
+	 * Checks for valid VAT params and calls VIES API.
+	 *
 	 * @since 1.1.0
 	 *
 	 * @param string     $vatNumber
@@ -706,7 +708,9 @@ class Vatchecker extends Module
 			return ( $error ) ? $this->l('VAT number format invalid') : false;
 		}
 
+		// Format validated, make the call!
 		$valid = $this->checkVies( $countryCode, $vatNumber );
+
 		if ( is_bool( $valid ) ) {
 			if ( ! $valid && $error ) {
 				// VIES validation returned false.
