@@ -720,6 +720,42 @@ class Vatchecker extends Module
 	}
 
 	/**
+	 * @since 1.0
+	 *
+	 * @param string $countryCode
+	 * @param string $vatNumber
+	 *
+	 * @return bool|null|string
+	 */
+	protected function checkVies( $countryCode, $vatNumber )
+	{
+		try {
+
+			$client = new SoapClient($this->_SOAPUrl);
+
+			$params = array(
+				'countryCode' => $countryCode,
+				'vatNumber' => $vatNumber,
+			);
+
+			$result = $client->__soapCall('checkVat', array($params));
+
+			if ( $result->valid === true ) {
+				return true;
+			}
+			return false;
+
+		} catch ( Throwable $e ) {
+			if ( Configuration::get( 'VATCHECKER_ALLOW_OFFLINE' ) ) {
+				return null;
+			}
+
+			//return $this->l( $e->getMessage() );
+			return $this->l( 'EU VIES server not responding' );
+		}
+	}
+
+	/**
 	 * Check vat number format before calling VIES API.
 	 *
 	 * @since 1.3.0
@@ -765,40 +801,6 @@ class Vatchecker extends Module
 		);
 
 		return (bool) preg_match( implode( '|', $preg ), $vatNumber );
-	}
-
-	/**
-	 * @since 1.0
-	 *
-	 * @param string $countryCode
-	 * @param string $vatNumber
-	 *
-	 * @return bool|null|string
-	 */
-	protected function checkVies( $countryCode, $vatNumber )
-	{
-		try {
-
-			$client = new SoapClient($this->_SOAPUrl);
-
-			$params = array(
-				'countryCode' => $countryCode,
-				'vatNumber' => $vatNumber,
-			);
-
-			$result = $client->__soapCall('checkVat', array($params));
-
-			if ( $result->valid === true ) {
-				return true;
-			}
-			return false;
-
-		} catch ( Throwable $e ) {
-			if ( Configuration::get( 'VATCHECKER_ALLOW_OFFLINE' ) ) {
-				return null;
-			}
-			return $this->l( 'EU VIES server not responding' );
-		}
 	}
 
 	/**
