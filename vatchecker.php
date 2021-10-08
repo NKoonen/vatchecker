@@ -97,14 +97,12 @@ class Vatchecker extends Module
 		Configuration::updateValue('VATCHECKER_ALLOW_OFFLINE', true);
 		//Configuration::updateValue('VATCHECKER_EU_COUNTRIES', null );
 		//Configuration::updateValue('VATCHECKER_ORIGIN_COUNTRY', null);
-		//Configuration::updateValue('VATCHECKER_NO_TAX_GROUP', null);
 
 		return parent::install() &&
 			$this->installDB() &&
 			$this->registerHook('displayHeader') &&
 			$this->registerHook('displayBeforeBodyClosingTag') &&
-			$this->registerHook('actionValidateCustomerAddressForm') &&
-			$this->registerHook('actionCartSave');
+			$this->registerHook('actionValidateCustomerAddressForm');
 	}
 
 	/**
@@ -136,7 +134,6 @@ class Vatchecker extends Module
 		Configuration::deleteByName('VATCHECKER_ALLOW_OFFLINE');
 		Configuration::deleteByName('VATCHECKER_ORIGIN_COUNTRY');
 		Configuration::deleteByName('VATCHECKER_EU_COUNTRIES');
-		Configuration::deleteByName('VATCHECKER_NO_TAX_GROUP');
 
 		return parent::uninstall();
 	}
@@ -220,7 +217,6 @@ class Vatchecker extends Module
 			'VATCHECKER_REQUIRED'       => Configuration::get( 'VATCHECKER_REQUIRED', null, null, null, true ),
 			'VATCHECKER_ALLOW_OFFLINE'  => Configuration::get( 'VATCHECKER_ALLOW_OFFLINE', null, null, null, true ),
 			'VATCHECKER_ORIGIN_COUNTRY' => Configuration::get( 'VATCHECKER_ORIGIN_COUNTRY', null, null, null, '0' ),
-			'VATCHECKER_NO_TAX_GROUP'   => Configuration::get( 'VATCHECKER_NO_TAX_GROUP', null, null, null, null ),
 		);
 
 		$countries = $this->getEUCountries();
@@ -368,74 +364,12 @@ class Vatchecker extends Module
 							'value' => 'id',
 						),
 					),
-					array(
-						'type'    => 'select',
-						'name'    => 'VATCHECKER_NO_TAX_GROUP',
-						'label'   => $this->l('Valid VAT Group') . ' (' . $this->l( 'Optional' ) . ')',
-						'desc'    => $this->l('Customers with valid VAT number will be placed in this group.'),
-						'options' => array(
-							'query'   => Group::getGroups(Context::getContext()->language->id, true),
-							'id'      => 'id_group',
-							'name'    =>'name',
-							'default' => array(
-								'value' => '',
-								'label' => $this->l('Select Group')
-							)
-						)
-					),
 				),
 				'submit' => array(
 					'title' => $this->l('Save'),
 				),
 			),
 		);
-	}
-
-	/**
-	 * @since 1.2
-	 */
-	public function hookActionCartSave() {
-		static $cache = array();
-		if ( ! $this->context->cart ) {
-			return;
-		}
-
-		// Only run method on checkout page.
-		$controller = $this->context->controller->php_self;
-		if ( ! in_array( $controller, array( 'order', 'checkoutpayment-form' ) ) ) {
-			return;
-		}
-
-		$address_id = $this->context->cart->getTaxAddressId();
-		if ( ! $address_id ) {
-			return;
-		}
-
-		$address   = new Address( $address_id );
-		$cache_key = $address_id . $address->id_country . $address->vat_number;
-
-		if ( isset( $cache[ $cache_key ] ) ) {
-			$vatValid = true === $cache[ $cache_key ];
-			$this->updateNoTaxGroup( $vatValid, $address->id_country, $this->context->customer );
-
-			return;
-		}
-
-		$vatValid = false;
-		if ( ! $this->isOriginCountry( $address->id_country ) ) {
-			$vatValid = $this->isValidVat( $address, true );
-		}
-
-		if ( null === $vatValid ) {
-			// Module inactive or VIES server offline.
-			return;
-		}
-
-		$vatValid = true === $vatValid;
-
-		$this->updateNoTaxGroup( $vatValid, $address->id_country, $this->context->customer );
-
-		$cache[ $cache_key ] = $vatValid;
 	}
 
 	/**
@@ -465,8 +399,6 @@ class Vatchecker extends Module
 			// Module inactive or VIES server offline.
 			return true;
 		}
-
-		$this->updateNoTaxGroup( $vatValid, $countryId, $this->context->customer );
 
 		if ( true !== $vatValid && Configuration::get( 'VATCHECKER_REQUIRED' ) ) {
 			$form->getField('vat_number')->addError( $vatError );
@@ -917,107 +849,5 @@ class Vatchecker extends Module
 			return $address;
 		}
 		return null;
-	}
-
-	/**
-	 * @since 1.2.1
-	 * @return int|null
-	 */
-	public function getNoTaxGroup() {
-		return Configuration::get('VATCHECKER_NO_TAX_GROUP');
-	}
-
-	/**
-	 * @since 1.1.1
-	 * @param bool|string $vatValid
-	 * @param int         $countryId
-	 * @param Customer    $customer
-	 */
-	public function updateNoTaxGroup( $vatValid, $countryId, $customer = null ) {
-		if ( ! $customer ) {
-			$customer = $this->context->customer;
-		}
-		if ( ! $this->getNoTaxGroup() ) {
-			return;
-		}
-
-		if ( is_string( $vatValid ) ) {
-			$vatValid = $this->checkVat( $vatValid, $countryId );
-			$vatValid = $vatValid['valid'];
-
-			if ( null === $vatValid ) {
-				// Module inactive.
-				return;
-			}
-		}
-
-		if ( true === $vatValid ) {
-
-			if ( ! $this->isOriginCountry( (int) $countryId ) ) {
-				// If all is correct, put the customer in the no TAX group.
-				$this->addNoTaxGroup( $customer );
-			} else {
-				$this->removeNoTaxGroup( $customer );
-			}
-		} else {
-			$this->removeNoTaxGroup( $customer );
-		}
-	}
-
-	/**
-	 * @since 1.1.0
-	 * @param Customer $customer
-	 */
-	protected function addNoTaxGroup( $customer ) {
-		$group = $this->getNoTaxGroup();
-		if ( ! $group ) {
-			return;
-		}
-		if ( $this->hasNoTaxGroup( $customer ) ) {
-			// Already in group.
-			return;
-		}
-
-		$customer->addGroups( array( (int) $group ) );
-	}
-
-	/**
-	 * @since 1.1.0
-	 * @param Customer $customer
-	 */
-	protected function removeNoTaxGroup( $customer ) {
-		$group = $this->getNoTaxGroup();
-		if ( ! $group ) {
-			return;
-		}
-		if ( ! $this->hasNoTaxGroup( $customer ) ) {
-			// Not in group.
-			return;
-		}
-
-		// Remove from group.
-		$groups = $customer->getGroups();
-		$groups = array_diff( $groups, array( (int) $group ) );
-		if ( empty( $groups ) ) {
-			$groups = array( Configuration::get( 'PS_CUSTOMER_GROUP' ) );
-		}
-		$customer->updateGroup( $groups );
-	}
-
-	/**
-	 * @since 1.2.1
-	 * @param int|Customer $customer
-	 * @return bool
-	 */
-	public function hasNoTaxGroup( $customer ) {
-		$group = $this->getNoTaxGroup();
-		if ( ! $group ) {
-			return false;
-		}
-
-		if ( $customer instanceof Customer ) {
-			return in_array( $group, $customer->getGroups() );
-		}
-		return in_array( $group, Customer::getGroupsStatic( $customer ) );
 	}
 }
