@@ -832,20 +832,46 @@ class Vatchecker extends Module
 
 	/**
 	 * @since 1.2.2
-	 * @param int|string $countryId
+	 * @param int|string|Country $countryId
 	 * @return bool
 	 */
 	public function isOriginCountry( $countryId ) {
+		static $cache = array();
+
+		if ( $countryId instanceof Country ) {
+			$countryId = $countryId->id;
+		}
+
+		if ( isset( $cache[ $countryId ] ) ) {
+			return $cache[ $countryId ];
+		}
+
 		if ( ! is_numeric( $countryId ) ) {
-			$countryId = Country::getByIso( $countryId );
-			if ( is_array( $countryId ) && isset( $country['id_country'] ) ) {
-				$countryId = $country['id_country'];
+			if ( is_string( $countryId ) ) {
+				$countryId = Country::getByIso( $countryId );
+				if ( is_array( $countryId ) && isset( $country['id_country'] ) ) {
+					$countryId = $country['id_country'];
+				}
 			}
 			if ( ! is_numeric( $countryId ) ) {
+				$cache[ $countryId ] = false;
 				return false;
 			}
 		}
-		return ( (int) Configuration::get( 'VATCHECKER_ORIGIN_COUNTRY' ) === (int) $countryId );
+
+		$cache[ $countryId ] = ( $this->getOriginCountry() === (int) $countryId );
+		return $cache[ $countryId ];
+	}
+
+	/**
+	 * @return int|null
+	 */
+	public function getOriginCountry() {
+		static $origin_country = null;
+		if ( null === $origin_country ) {
+			$origin_country = (int) Configuration::get( 'VATCHECKER_ORIGIN_COUNTRY' );
+		}
+		return $origin_country;
 	}
 
 	/**
