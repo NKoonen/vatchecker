@@ -700,7 +700,7 @@ class Vatchecker extends Module
 	 *     @type string    $error Error notification (if any).
 	 * }
 	 */
-	public function checkVat( $vatNumber, $countryCode = null ) {
+	public function checkVat( $vatNumber, $countryCode ) {
 
 		if ( ! Configuration::get( 'VATCHECKER_LIVE_MODE' ) ) {
 			return array(
@@ -717,12 +717,17 @@ class Vatchecker extends Module
 			$countryCode = Country::getIsoById( $countryCode );
 		}
 
-		if ( ! $this->isEUCountry( $countryCode ) ) {
+		if ( ! $countryCode || ! $this->isEUCountry( $countryCode ) ) {
 			$return['error'] = $this->l( 'Please select an EU country' );
 			return $return;
 		}
 
 		$vatNumber = ltrim( $vatNumber, $countryCode );
+
+		if ( ! $vatNumber ) {
+			$return['error'] = $this->l( 'Please provide a VAT number' );
+			return $return;
+		}
 
 		if ( ! $this->isVatFormat( $vatNumber ) ) {
 			$return['error'] = $this->l( 'VAT number format invalid' );
@@ -791,6 +796,9 @@ class Vatchecker extends Module
 	 * @return bool
 	 */
 	public function isVatFormat( $vatNumber ) {
+		if ( ! $vatNumber ) {
+			return false;
+		}
 
 		$preg = array(
 			'/(?xi)^(',
