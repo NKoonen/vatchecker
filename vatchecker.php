@@ -547,7 +547,7 @@ class Vatchecker extends Module
 			);
 		}
 
-		$vatCheck = $this->checkVat( $address->vat_number, $address->id_country, true );
+		$vatCheck = $this->checkVat( $address->vat_number, $address->id_country, false );
 
 		// Make sure it's a boolean, otherwise it's an error so we don't want to update the database.
 		if ( is_bool( $vatCheck ) ) {
