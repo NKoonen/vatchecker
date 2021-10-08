@@ -837,11 +837,13 @@ class Vatchecker extends Module
 	 */
 	public function isOriginCountry( $countryId ) {
 		if ( ! is_numeric( $countryId ) ) {
-			$country = Country::getByIso( $countryId );
-			if ( ! isset( $country['id_country'] ) ) {
+			$countryId = Country::getByIso( $countryId );
+			if ( is_array( $countryId ) && isset( $country['id_country'] ) ) {
+				$countryId = $country['id_country'];
+			}
+			if ( ! is_numeric( $countryId ) ) {
 				return false;
 			}
-			$countryId = $country['id_country'];
 		}
 		return ( (int) Configuration::get( 'VATCHECKER_ORIGIN_COUNTRY' ) === (int) $countryId );
 	}
