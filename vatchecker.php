@@ -262,18 +262,19 @@ class Vatchecker extends Module
 	protected function getConfigForm()
 	{
 		$countries = Country::getCountries($this->context->language->id);
+		foreach ($countries as $key => $country) {
+			$countries[ $key ] = array(
+				'id'    => $country['id_country'],
+				'name'  => $country['name'] . ' (' . $country['iso_code'] . ')',
+			);
+		}
+
 		$select_country = array(
 			0 => array(
 				'id'   => 0,
 				'name' => $this->l('- Select a country -'),
 			),
 		);
-		foreach ($countries as $country) {
-			$cntylist[] = array(
-				'id'    => $country['id_country'],
-				'name'  => $country['name'] . ' (' . $country['iso_code'] . ')',
-			);
-		}
 
 		return array(
 			'form' => array(
@@ -346,7 +347,7 @@ class Vatchecker extends Module
 						'name'    => 'VATCHECKER_ORIGIN_COUNTRY',
 						'label'   => $this->l('Origin'),
 						'options' => array(
-							'query' => array_merge( $select_country, $cntylist ),
+							'query' => array_merge( $select_country, $countries ),
 							'id'    => 'id',
 							'name'  => 'name',
 						),
@@ -359,7 +360,7 @@ class Vatchecker extends Module
 						'label'    => $this->l('EU Countries'),
 						'multiple' => true,
 						'values'   => array(
-							'query' => $cntylist,
+							'query' => $countries,
 							'id'    => 'id',
 							'name'  => 'name',
 							'value' => 'id',
