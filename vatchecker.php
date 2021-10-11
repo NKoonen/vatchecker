@@ -514,7 +514,9 @@ class Vatchecker extends Module
 					);
 				}
 
-			} else {
+			}
+
+			if ( ! $checkVat ) {
 
 				$result = array(
 					'id_address'     => $address->id,
