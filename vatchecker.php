@@ -781,7 +781,7 @@ class Vatchecker extends Module
 				$return['valid'] = null;
 			}
 
-			PrestaShopLogger::addLog( 'Vatchecker: ' . implode( ', ', $params ) . ' > ' . $return['error'] );
+			PrestaShopLogger::addLog( 'Vatchecker: ' . implode( ', ', $params ) . ' > ' . $e->getMessage() );
 		}
 
 		$cache[ $cache_key ] = $return;
