@@ -836,10 +836,16 @@ class Vatchecker extends Module
 	 */
 	public function isEUCountry( $countryCode )
 	{
+		$key = 'iso_code';
 		if ( is_numeric( $countryCode ) ) {
-			$countryCode = Country::getIsoById( $countryCode );
+			$key = 'id_country';
 		}
-		return in_array( $countryCode, $this->getEUCountries() );
+		foreach ( $this->getEUCountries() as $country ) {
+			if ( $country[ $key ] === $countryCode ) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
