@@ -12,22 +12,23 @@ if ( Tools::getValue('vatchecker') !== Tools::getToken( 'vatchecker' ) ) {
 
 $vatchecker = new Vatchecker();
 
-$vat     = Tools::getValue('vat_number');
-$country = Tools::getValue('id_country');
+$vatNumber = Tools::getValue('vat_number');
+$countryId = Tools::getValue('id_country');
 
-$is_valid = $vatchecker->checkVat( $vat, $country );
-$is_eu    = $vatchecker->isEUCountry( $country );
+$is_eu    = $vatchecker->isEUCountry( $countryId );
+$checkVat = $vatchecker->checkVat( $vatNumber, $countryId );
+$vatValid = $checkVat['valid'];
+$vatError = $checkVat['error'];
 
-$error = ( true !== $is_valid ) ? $is_valid : '';
-$valid = ( true === $is_valid );
+$valid = ( true === $vatValid );
 
-if ( ! $vatchecker->isEUCountry( $country ) ) {
+if ( ! $is_eu ) {
 	$valid = null;
 }
 
 $return = array(
 	'valid' => $valid,
-	'error' => $error,
+	'error' => $vatError,
 	'is_eu' => $is_eu,
 );
 
