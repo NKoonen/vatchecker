@@ -916,15 +916,22 @@ class Vatchecker extends Module
 	{
 		static $cache = array();
 
-		if ( $country instanceof Country ) {
-			return $country->id;
+		if ( ! is_scalar( $country ) ) {
+			if ( $country instanceof Country ) {
+				return $country->id;
+			} elseif ( isset( $country['id_country'] ) ) {
+				return $country['id_country'];
+			}
 		}
 
 		if ( isset( $cache[ $country ] ) ) {
 			return $cache[ $country ];
 		}
 
-		if ( ! is_numeric( $country ) ) {
+		$countryId = 0;
+		if ( is_numeric( $country ) ) {
+			$countryId = $country;
+		} else {
 			if ( is_string( $country ) ) {
 				$countryId = Country::getByIso( $country );
 				if ( is_array( $countryId ) && isset( $countryId['id_country'] ) ) {
