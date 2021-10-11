@@ -780,6 +780,8 @@ class Vatchecker extends Module
 			if ( Configuration::get( 'VATCHECKER_ALLOW_OFFLINE' ) ) {
 				$return['valid'] = null;
 			}
+
+			PrestaShopLogger::addLog( 'Vatchecker: ' . implode( ', ', $params ) . ' > ' . $return['error'] );
 		}
 
 		$cache[ $cache_key ] = $return;
