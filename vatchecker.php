@@ -437,12 +437,17 @@ class Vatchecker extends Module
 	 *
 	 * @since 2.0.0
 	 *
-	 * @param Address $address
+	 * @param int|Address $address
 	 *
 	 * @return bool
 	 */
-	public function canOrderWithoutVat( $address )
+	public function canOrderWithoutVat( $address = null )
 	{
+		if ( ! $address ) {
+			if ( $this->context->cart ) {
+				$address = $this->context->cart->getTaxAddressId();
+			}
+		}
 		$address = $this->getAddress( $address );
 		if ( ! $address ) {
 			return false;
