@@ -665,7 +665,7 @@ class Vatchecker extends Module
 			$sql    = "INSERT INTO {$table} ({$keys}) VALUES ({$values})";
 		}
 
-		return Db::getInstance()->executeS( $sql );
+		return Db::getInstance()->execute( $sql );
 	}
 
 	/**
