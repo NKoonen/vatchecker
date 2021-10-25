@@ -414,6 +414,10 @@ class Vatchecker extends Module
 			return true;
 		}
 		$vatNumber = $form->getField('vat_number')->getValue();
+		// No value means we don't need to validate.
+		if ( ! $vatNumber ) {
+			return true;
+		}
 
 		$checkVat = $this->checkVat( $vatNumber, $countryId );
 		$vatValid = $checkVat['valid'];
