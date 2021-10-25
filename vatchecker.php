@@ -327,7 +327,7 @@ class Vatchecker extends Module
 						'label'   => $this->l('Validation required'),
 						'name'    => 'VATCHECKER_REQUIRED',
 						'is_bool' => true,
-						'desc'    => $this->l('Require valid VAT numbers for EU countries (VIES).'),
+						'desc'    => $this->l('If a VAT number is provided, it needs to be validated by the VIES database.'),
 						'values'  => array(
 							array(
 								'id'    => 'required_enabled',
