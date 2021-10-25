@@ -99,7 +99,7 @@ class Vatchecker extends Module
 
 		parent::__construct();
 
-		$this->displayName = $this->l('Vat Checker');
+		$this->displayName = $this->l('VAT Checker');
 		$this->description = $this->l(
 			'Check if a customers VAT number is valid and gives the customer 0 tax if the customer is not in from country.'
 		);
@@ -779,7 +779,7 @@ class Vatchecker extends Module
 			}
 
 		} catch ( Throwable $e ) {
-			
+
 			//$return['error'] = $this->l( $e->getMessage() );
 			$return['error'] = $this->l( 'EU VIES server not responding' );
 

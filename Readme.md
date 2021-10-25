@@ -1,6 +1,6 @@
-# Vat Checker
+# VAT Checker
 
-This module checks a customers VAT number with the 
+This module checks a customers VAT number with the
 [Offical VIES database](https://ec.europa.eu/taxation_customs/vies/).
 
 If the customer has a valid VAT number, the customer can order without VAT.
