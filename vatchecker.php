@@ -766,6 +766,9 @@ class Vatchecker extends Module
 			case 'GR':
 				$countryCode = 'EL'; // The Greek use "Ellas" apparently.
 			break;
+			case 'GB':
+				$countryCode = 'XI'; // Northern Ireland.
+			break;
 		}
 
 		try {
