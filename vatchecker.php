@@ -770,6 +770,7 @@ class Vatchecker extends Module
 				$countryCode = 'XI'; // Northern Ireland.
 			break;
 		}
+		$vatNumber = ltrim( $vatNumber, $countryCode );
 
 		try {
 
