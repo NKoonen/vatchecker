@@ -761,6 +761,13 @@ class Vatchecker extends Module
 			'error' => '',
 		);
 
+		// @todo Centralize method?
+		switch ( $countryCode ) {
+			case 'GR':
+				$countryCode = 'EL'; // The Greek use "Ellas" apparently.
+			break;
+		}
+
 		try {
 
 			$client = new SoapClient($this->_SOAPUrl);
