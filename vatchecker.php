@@ -88,7 +88,7 @@ class Vatchecker extends Module
 	{
 		$this->name = 'vatchecker';
 		$this->tab = 'billing_invoicing';
-		$this->version = '2.0.1';
+		$this->version = '2.0.2';
 		$this->author = 'Inform-All & Keraweb';
 		$this->need_instance = 1;
 
@@ -99,7 +99,7 @@ class Vatchecker extends Module
 
 		parent::__construct();
 
-		$this->displayName = $this->l('Vat Checker');
+		$this->displayName = $this->l('VAT Checker');
 		$this->description = $this->l(
 			'Check if a customers VAT number is valid and gives the customer 0 tax if the customer is not in from country.'
 		);
@@ -761,6 +761,17 @@ class Vatchecker extends Module
 			'error' => '',
 		);
 
+		// @todo Centralize method?
+		switch ( $countryCode ) {
+			case 'GR':
+				$countryCode = 'EL'; // The Greek use "Ellas" apparently.
+			break;
+			case 'GB':
+				$countryCode = 'XI'; // Northern Ireland.
+			break;
+		}
+		$vatNumber = ltrim( $vatNumber, $countryCode );
+
 		try {
 
 			$client = new SoapClient($this->_SOAPUrl);
@@ -779,7 +790,7 @@ class Vatchecker extends Module
 			}
 
 		} catch ( Throwable $e ) {
-			
+
 			//$return['error'] = $this->l( $e->getMessage() );
 			$return['error'] = $this->l( 'EU VIES server not responding' );
 
