@@ -63,6 +63,7 @@ class Vatchecker extends Module
 		'FI' => '(FI)?[0-9]{8}',                               # Finland
 		'FR' => '(FR)?[0-9A-Z]{2}[0-9]{9}',                    # France
 		//'GB' => '(GB)?([0-9]{9}([0-9]{3})?|[A-Z]{2}[0-9]{3})', # United Kingdom // Brexit!
+		'XI' => '(XI)?([0-9]{9}([0-9]{3})?|[A-Z]{2}[0-9]{3})', # North Ireland
 		'HR' => '(HR)?[0-9]{11}',                              # Croatia
 		'HU' => '(HU)?[0-9]{8}',                               # Hungary
 		'IE' => '(IE)?[0-9]{7}[A-Z]{1,2}',                     # Ireland
