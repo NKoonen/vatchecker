@@ -574,7 +574,7 @@ class Vatchecker extends Module
 	private function getVatValidation( $address )
 	{
 		$address = $this->getAddress( $address );
-		if ( ! $address ) {
+		if ( ! $address || ! $address->id || ! $address->id_country || ! $address->vat_number ) {
 			return null;
 		}
 
