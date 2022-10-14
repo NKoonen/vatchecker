@@ -79,6 +79,7 @@ class Vatchecker extends Module
 		'SE' => '(SE)?[0-9]{12}',                              # Sweden
 		'SI' => '(SI)?[0-9]{8}',                               # Slovenia
 		'SK' => '(SK)?[0-9]{10}',                              # Slovakia
+		'XI' => '(XI)?([0-9]{9}([0-9]{3})?|[A-Z]{2}[0-9]{3})'  # North Ireland
 	);
 
 	/**
