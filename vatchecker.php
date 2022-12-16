@@ -717,13 +717,13 @@ class Vatchecker extends Module
 			return $return;
 		}
 
-		$vatNumber = ltrim( $vatNumber, $countryCode );
-
 		if ( ! $vatNumber ) {
 			$return['error'] = $this->l( 'Please provide a VAT number' );
 			self::$cache[ $cache_key ] = $return;
 			return $return;
 		}
+		
+		$vatNumber = ltrim( $vatNumber, $countryCode );
 
 		if ( ! $this->isVatFormat( $vatNumber ) ) {
 			$return['error'] = $this->l( 'VAT number format invalid' );
