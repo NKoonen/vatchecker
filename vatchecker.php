@@ -105,7 +105,7 @@ class Vatchecker extends Module
 			'Check if a customers VAT number is valid and gives the customer 0 tax if the customer is not in from country.'
 		);
 
-		$this->ps_versions_compliancy = array('min' => '1.7', 'max' => _PS_VERSION_);
+		$this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
 	}
 
 	/**
@@ -123,7 +123,6 @@ class Vatchecker extends Module
 		return parent::install() &&
 			$this->installDB() &&
 			$this->registerHook('displayHeader') &&
-			$this->registerHook('displayBeforeBodyClosingTag') &&
 			$this->registerHook('actionValidateCustomerAddressForm');
 	}
 
@@ -167,20 +166,12 @@ class Vatchecker extends Module
 	public function hookDisplayHeader( $params )
 	{
 		$this->context->controller->addJS( $this->_path . 'views/js/front.js' );
-	}
-
-	/**
-	 * @since 1.1.0
-	 * @param array $params
-	 */
-	public function hookDisplayBeforeBodyClosingTag( $params )
-	{
-		$json = array(
-			'ajax_url' => $this->getPathUri() . 'ajax.php',
-			'token' => Tools::getToken( 'vatchecker' ),
-		);
-
-		echo '<script id="vatchecker_js">var vatchecker = ' . json_encode( $json ) . '</script>';
+		Media::addJsDef(array(
+			'vatchecker' =>  array(
+				'ajax_url' => $this->getPathUri() . 'ajax.php',
+				'token' => Tools::getToken('vatchecker'),
+			)
+		));
 	}
 
 	/**
