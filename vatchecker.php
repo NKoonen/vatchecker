@@ -618,8 +618,8 @@ class Vatchecker extends Module
 
 		$sql = "SELECT * FROM {$table}
 			WHERE id_address = {$address->id}
-			    AND id_country = {$address->id_country}
-			    AND vat_number = '{$address->vat_number}'
+				AND id_country = {$address->id_country}
+				AND vat_number = '{$address->vat_number}'
 			";
 
 		$result = Db::getInstance()->executeS( $sql );
@@ -959,7 +959,7 @@ class Vatchecker extends Module
 		if ( $cache && $countries ) {
 			return $countries;
 		}
-		$all_countries = Country::getCountries( $this->context->language->id,0 );
+		$all_countries = $this->getCountries();
 		$countries     = [];
 		foreach ( $all_countries as $country ) {
 			if ( array_key_exists( $country['iso_code'], $this->euVatFormats ) ) {
@@ -969,6 +969,26 @@ class Vatchecker extends Module
 		}
 
 		return $countries;
+	}
+
+	/**
+	 * Get country list. Replacement for Country::getCountries since it doens't return countries non associated to all shops.
+	 *
+	 * @param boolean $active
+	 *
+	 * @return int
+	 */
+	protected function getCountries($active = false)
+	{
+		$result = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
+			'SELECT c.`id_country`, cl.`name`, c.`iso_code`
+			FROM `' . _DB_PREFIX_ . 'country` c
+			LEFT JOIN `' . _DB_PREFIX_ . 'country_lang` cl ON (c.`id_country` = cl.`id_country` AND cl.`id_lang` = ' . (int)$this->context->language->id . ')
+			WHERE 1 ' . ($active ? ' AND c.active = 1 ' : '') . '
+			ORDER BY cl.`name` ASC'
+		);
+
+		return $result;
 	}
 
 	/**
