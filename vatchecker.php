@@ -959,7 +959,7 @@ class Vatchecker extends Module
 		if ( $cache && $countries ) {
 			return $countries;
 		}
-		$all_countries = Country::getCountries( $this->context->language->id );
+		$all_countries = Country::getCountries( $this->context->language->id,0 );
 		$countries     = [];
 		foreach ( $all_countries as $country ) {
 			if ( array_key_exists( $country['iso_code'], $this->euVatFormats ) ) {
