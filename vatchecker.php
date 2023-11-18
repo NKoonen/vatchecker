@@ -28,6 +28,8 @@ if ( ! defined( '_PS_VERSION_' ) ) {
 	exit;
 }
 
+const ERROR_SEVERITY = 3;
+
 class Vatchecker extends Module
 {
 	/**
@@ -836,7 +838,7 @@ class Vatchecker extends Module
 				$return['valid'] = null;
 			}
 
-			PrestaShopLogger::addLog( 'Vatchecker: ' . implode( ', ', $params ) . ' > ' . $e->getMessage() );
+			PrestaShopLogger::addLog( 'VAT check failed! (params: ' . implode( ', ', $params ) . ' , error: ' . $e->getMessage() . ')', ERROR_SEVERITY );
 		}
 
 		$cache[ $cache_key ] = $return;
