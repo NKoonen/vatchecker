@@ -811,14 +811,14 @@ class Vatchecker extends Module
 		}
 		$vatNumber = ltrim( $vatNumber, $countryCode );
 
+		$params = [
+			'countryCode' => $countryCode,
+			'vatNumber'   => $vatNumber,
+		];
+
 		try {
 
 			$client = new SoapClient( $this->_SOAPUrl );
-
-			$params = [
-				'countryCode' => $countryCode,
-				'vatNumber'   => $vatNumber,
-			];
 
 			$result = $client->__soapCall( 'checkVat', [ $params ] );
 
