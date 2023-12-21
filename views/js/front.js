@@ -90,18 +90,16 @@ jQuery( function( $ ) {
 			$result.html('');
 			if ( resp.hasOwnProperty( 'valid' ) ) {
 				// Check successful.
-				if ( true === resp.valid ) {
+				if ( resp.valid ) {
 					// Valid VAT
 					$elem.addClass( 'validated text-success' );
 					$result.remove();
 
 					checked[ vat_number ] = resp;
-				} else if ( false === resp.valid ) {
+				} else if ( resp.error ) {
 					$elem.addClass( 'error text-danger' );
-					if ( resp.hasOwnProperty( 'error' ) && resp.error ) {
-						// Error message.
-						$result.addClass( 'text-danger' ).html( resp.error );
-					}
+					// Error message.
+					$result.addClass( 'text-danger' ).html( resp.error );
 				} else {
 					$elem.removeClass( 'validated error text-danger text-success' );
 					$result.remove();
