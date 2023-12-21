@@ -32,11 +32,13 @@ jQuery( function( $ ) {
 	var $document = $(document),
 		checked   = {};
 
-	vatchecker.validate = function( vat_number, id_country, $elem ) {
+	vatchecker.validate = function( vat_number, id_country, $elem, $reloader ) {
 		$elem.removeClass( 'validated error text-danger text-success' );
-		$elem.next( '.vat-result' ).remove();
-		$elem.after( '<div class="vat-result small"></div>' );
-		$result = $elem.next( '.vat-result' );
+		$elem.siblings( '.vatchecker-result' ).remove();
+
+		// Remove invalid characters.
+		vat_number = vat_number.toUpperCase().replace( /[^A-Z0-9]/gi, '' );
+		$elem.val( vat_number );
 
 		// Minimal VAT number length is 8 digits.
 		// https://en.wikipedia.org/wiki/VAT_identification_number
@@ -44,7 +46,20 @@ jQuery( function( $ ) {
 			return;
 		}
 
-		var $result          = $elem.next( '.vat-result' ),
+		if ( ! $reloader || ! $reloader.length ) {
+			$reloader = addReload( $elem );
+		} else {
+			// Enfore recheck.
+			delete checked[ vat_number ];
+		}
+
+		if ( $reloader ) {
+			$reloader.after( '<div class="vatchecker-result small"></div>' );
+		} else {
+			$elem.after( '<div class="vatchecker-result small"></div>' );
+		}
+
+		var $result          = $elem.siblings( '.vatchecker-result' ),
 			loading          = '. . . ',
 			loading_interval = setInterval( function() {
 			if ( 20 < loading.length ) {
@@ -60,6 +75,7 @@ jQuery( function( $ ) {
 		}
 
 		$elem.css( { 'opacity': '0.5' } );
+		$reloader.addClass( 'rotate' );
 
 		$.ajax( {
 			type: 'POST',
@@ -88,12 +104,14 @@ jQuery( function( $ ) {
 
 			clearInterval( loading_interval );
 			$result.html('');
+			$reloader.removeClass( 'rotate' );
 			if ( resp.hasOwnProperty( 'valid' ) ) {
 				// Check successful.
 				if ( resp.valid ) {
 					// Valid VAT
 					$elem.addClass( 'validated text-success' );
 					$result.remove();
+					$reloader.remove();
 
 					checked[ vat_number ] = resp;
 				} else if ( resp.error ) {
@@ -112,16 +130,33 @@ jQuery( function( $ ) {
 		}
 	};
 
+	function addReload( input ) {
+		var $vat    = $( input ),
+			$reloader = $vat.siblings( '.vatchecker-reload' );
+
+		if ( $reloader.length ) {
+			return $reloader;
+		}
+
+		$vat.after( '<span class="vatchecker-reload"></span>' );
+		$reloader = $vat.siblings( '.vatchecker-reload' );
+
+		$reloader.on( 'click touchend', function() {
+			var $form    = $vat.parents( 'form' ),
+				$country = $form.find('[name="id_country"]');
+
+			vatchecker.validate( $vat.val(), $country.val(), $vat, $reloader );
+		} );
+
+		return $reloader;
+	}
+
 	$document.on( 'blur', '[name="vat_number"]', function () {
 		var $vat     = $( this ),
 			$form    = $vat.parents( 'form' ),
-			$country = $form.find('[name="id_country"]'),
+			$country = $form.find('[name="id_country"]');
 
-			// Remove invalid characters.
-			val = $vat.val().toUpperCase().replace( /[^A-Z0-9]/gi, '' );
-
-		$vat.val( val );
-		vatchecker.validate( $( this ).val(), $country.val(), $vat );
+		vatchecker.validate( $vat.val(), $country.val(), $vat );
 	} );
 
 	$document.on( 'change', '[name="id_country"]', function() {

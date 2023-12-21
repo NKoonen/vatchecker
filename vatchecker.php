@@ -173,6 +173,7 @@ class Vatchecker extends Module
 	public function hookDisplayHeader( $params )
 	{
 		$this->context->controller->addJS( $this->_path . 'views/js/front.js' );
+		$this->context->controller->addCSS( $this->_path . 'views/css/front.css' );
 	}
 
 	/**
