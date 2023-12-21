@@ -337,22 +337,20 @@ class Vatchecker extends Module
 						],
 					],
 					[
-						'type'    => 'switch',
+						'type'    => 'select',
 						'label'   => $this->l( 'Offline validation' ),
 						'name'    => 'VATCHECKER_ALLOW_OFFLINE',
-						'is_bool' => true,
-						'desc'    => $this->l( 'Accept VAT numbers if the VIES validation service is offline' ),
-						'values'  => [
-							[
-								'id'    => 'offline_enabled',
-								'value' => true,
-								'label' => $this->l( 'Enabled' ),
+						'required' => false,
+						'desc'    => $this->l( 'What logic should the module use when the VIES database is offline?' ),
+						'options' => [
+							'query' => [
+								['id'=>1,'name'=>"Always mark VAT as valid"],
+								['id'=>2,'name'=>"Always mark VAT as invalid"],
+								['id'=>3,'name'=>"Use previous address logic, if none a mark VAT valid"],
+								['id'=>4,'name'=>"Use previous address logic, if none mark VAT invalid"]
 							],
-							[
-								'id'    => 'offline_disabled',
-								'value' => false,
-								'label' => $this->l( 'Disabled' ),
-							],
+							'id' => 'id',
+							'name' => 'name',
 						],
 					],
 					[
