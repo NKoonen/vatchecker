@@ -346,7 +346,7 @@ class Vatchecker extends Module
 							'query' => [
 								['id'=>1,'name'=>"Always mark VAT as valid"],
 								['id'=>2,'name'=>"Always mark VAT as invalid"],
-								['id'=>3,'name'=>"Use previous address logic, if none a mark VAT valid"],
+								['id'=>3,'name'=>"Use previous address logic, if none mark VAT valid"],
 								['id'=>4,'name'=>"Use previous address logic, if none mark VAT invalid"]
 							],
 							'id' => 'id',
@@ -816,10 +816,8 @@ class Vatchecker extends Module
 
 			//$return['error'] = $this->l( $e->getMessage() );
 			$return['error'] = $this->l( 'EU VIES server not responding' );
+			$return['valid'] = $this->VIESOfflineLogicHander($params);
 
-			if ( Configuration::get( 'VATCHECKER_ALLOW_OFFLINE' ) ) {
-				$return['valid'] = null;
-			}
 
 			PrestaShopLogger::addLog( 'VAT check failed! (params: ' . implode( ', ', $params ) . ' , error: ' . $e->getMessage() . ')', ERROR_SEVERITY );
 		}
@@ -827,6 +825,56 @@ class Vatchecker extends Module
 		$cache[ $cache_key ] = $return;
 
 		return $return;
+	}
+
+	public function VIESOfflineLogicHander($params)
+	{
+		switch (Configuration::get( 'VATCHECKER_ALLOW_OFFLINE' )) {
+			case 1:
+				return true;
+			break;
+			case 2:
+				return false;
+			break;
+			case 3:
+				$previous =  $this->getPreviousValidation($params);
+				return (!empty($previous)) ? $previous->valid : true;
+			break;
+			case 4:
+				$previous =  $this->getPreviousValidation($params);
+				return (!empty($previous)) ? $previous->valid : false;
+			break;
+			default:
+				return false;
+		}
+	}
+
+	/**
+	 * Gets previous validation by countryId and Vatnumber
+	 *
+	 * @since 2.1.0
+	 *
+	 * @param  string  $vatNumber
+	 *
+	 * @return bool
+	 */
+	private function getPreviousValidation( $params )
+	{
+		$table = _DB_PREFIX_ . 'vatchecker';
+		$countryId = Country::getByIso( $params['countryCode'] );
+
+		$sql = "SELECT * FROM {$table}
+			WHERE id_country = {$countryId}
+				AND vat_number = '{$params['vatNumber']}'
+			";
+
+		$result = Db::getInstance()->executeS( $sql );
+		if ( ! $result ) {
+			return null;
+		}
+
+		// Only one result.
+		return reset( $result );
 	}
 
 	/**
