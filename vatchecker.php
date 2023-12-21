@@ -64,7 +64,7 @@ class Vatchecker extends Module
 		'DK'  => '(DK)?[0-9]{8}',                               # Denmark
 		'EE'  => '(EE)?[0-9]{9}',                               # Estonia
 		'GR'  => '(EL)?[0-9]{9}',                               # Greece
-		'ES'  => '(ES)?[A-Z][0-9]{7}(?:[0-9]|[A-Z])',              # Spain
+		'ES'  => '(ES)?[A-Z][0-9]{7}(?:[0-9]|[A-Z])',           # Spain
 		'FI'  => '(FI)?[0-9]{8}',                               # Finland
 		'FR'  => '(FR)?[0-9A-Z]{2}[0-9]{9}',                    # France
 		//'GB' => '(GB)?([0-9]{9}([0-9]{3})?|[A-Z]{2}[0-9]{3})', # United Kingdom // Brexit!
@@ -173,6 +173,7 @@ class Vatchecker extends Module
 	public function hookDisplayHeader( $params )
 	{
 		$this->context->controller->addJS( $this->_path . 'views/js/front.js' );
+		$this->context->controller->addCSS( $this->_path . 'views/css/front.css' );
 	}
 
 	/**
@@ -660,9 +661,11 @@ class Vatchecker extends Module
 		$table = _DB_PREFIX_ . 'vatchecker';
 
 		// Required fields.
-		if ( empty( $record['id_address'] )
-		     || empty( $record['id_country'] )
-		     || empty( $record['vat_number'] ) ) {
+		if (
+			empty( $record['id_address'] ) ||
+			empty( $record['id_country'] ) ||
+			empty( $record['vat_number'] )
+		) {
 			return false;
 		}
 
@@ -673,7 +676,8 @@ class Vatchecker extends Module
 			}
 		}
 
-		$today                   = date( 'Y-m-d H:i:s' );
+		$today = date( 'Y-m-d H:i:s' );
+
 		$record['date_modified'] = $today;
 		if ( $record['valid'] ) {
 			$record['date_valid_vat'] = $today;
@@ -748,14 +752,16 @@ class Vatchecker extends Module
 		}
 
 		if ( ! $countryCode || ! $this->isEUCountry( $countryCode ) ) {
-			$return['error']           = $this->l( 'Please select an EU country' );
+			$return['error'] = $this->l( 'Please select an EU country' );
+
 			self::$cache[ $cache_key ] = $return;
 
 			return $return;
 		}
 
 		if ( ! $vatNumber ) {
-			$return['error']           = $this->l( 'Please provide a VAT number' );
+			$return['error'] = $this->l( 'Please provide a VAT number' );
+
 			self::$cache[ $cache_key ] = $return;
 
 			return $return;
@@ -764,7 +770,8 @@ class Vatchecker extends Module
 		$vatNumber = ltrim( $vatNumber, $countryCode );
 
 		if ( ! $this->isVatFormat( $vatNumber ) ) {
-			$return['error']           = $this->l( 'VAT number format invalid' );
+			$return['error'] = $this->l( 'VAT number format invalid' );
+
 			self::$cache[ $cache_key ] = $return;
 
 			return $return;
@@ -961,7 +968,7 @@ class Vatchecker extends Module
 		if ( $cache && $countries ) {
 			return $countries;
 		}
-		$all_countries = Country::getCountries( $this->context->language->id,0 );
+		$all_countries = Country::getCountries( $this->context->language->id );
 		$countries     = [];
 		foreach ( $all_countries as $country ) {
 			if ( array_key_exists( $country['iso_code'], $this->euVatFormats ) ) {

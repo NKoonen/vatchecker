@@ -1,0 +1,60 @@
+/**
+* 2007-2020 PrestaShop
+*
+* NOTICE OF LICENSE
+*
+* This source file is subject to the Academic Free License (AFL 3.0)
+* that is bundled with this package in the file LICENSE.txt.
+* It is also available through the world-wide-web at this URL:
+* http://opensource.org/licenses/afl-3.0.php
+* If you did not receive a copy of the license and are unable to
+* obtain it through the world-wide-web, please send an email
+* to license@prestashop.com so we can send you a copy immediately.
+*
+* DISCLAIMER
+*
+* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+* versions in the future. If you wish to customize PrestaShop for your
+* needs please refer to http://www.prestashop.com for more information.
+*
+*  @author    PrestaShop SA <contact@prestashop.com>
+*  @copyright 2007-2020 PrestaShop SA
+*  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+*  International Registered Trademark & Property of PrestaShop SA
+*
+* Don't forget to prefix your containers with your own identifier
+* to avoid any conflicts with others containers.
+*/
+
+.vatchecker-reload {
+	position: relative;
+	float: right;
+	margin: .2em;
+	width: 1em;
+	height: 1em;
+	display: inline-block;
+	border: 3px solid;
+	border-color: currentColor #0000  currentColor #0000;
+	border-radius: 50%;
+	box-sizing: border-box;
+	cursor: pointer;
+}
+.vatchecker-reload:before , .vatchecker-reload:after{
+	content: '';
+	top: 0;
+	left: 0;
+	position: absolute;
+	border: 0.25em solid transparent;
+	border-bottom-color: currentColor;
+	transform: translate(-0.33em,.17em) rotate(-35deg);
+}
+.vatchecker-reload:after {
+	border-color:  currentColor #0000 #0000 #0000 ;
+	transform: translate(.47em,-0.02em) rotate(-35deg);
+}
+.vatchecker-reload.rotate {
+	animation: 1s rotate linear infinite;
+}
+@keyframes rotate {
+	100%{ transform: rotate(360deg) }
+}
