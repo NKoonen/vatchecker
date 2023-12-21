@@ -94,7 +94,7 @@ class Vatchecker extends Module
 	{
 		$this->name          = 'vatchecker';
 		$this->tab           = 'billing_invoicing';
-		$this->version       = '2.0.4';
+		$this->version       = '2.1.0';
 		$this->author        = 'Inform-All & Keraweb';
 		$this->need_instance = 1;
 
@@ -118,11 +118,10 @@ class Vatchecker extends Module
 	public function install()
 	{
 		Configuration::updateValue( 'VATCHECKER_LIVE_MODE', true );
-		Configuration::updateValue( 'VATCHECKER_REQUIRED', true );
 		Configuration::updateValue( 'VATCHECKER_ALLOW_OFFLINE', true );
 		Configuration::updateValue( 'VATCHECKER_CUSTOMER_GROUP', false );
-		//Configuration::updateValue('VATCHECKER_EU_COUNTRIES', null );
-		//Configuration::updateValue('VATCHECKER_ORIGIN_COUNTRY', null);
+		Configuration::updateValue('VATCHECKER_EU_COUNTRIES', null );
+		Configuration::updateValue('VATCHECKER_ORIGIN_COUNTRY', null );
 
 		return parent::install()
 		       && $this->installDB()
@@ -156,7 +155,6 @@ class Vatchecker extends Module
 	public function uninstall()
 	{
 		Configuration::deleteByName( 'VATCHECKER_LIVE_MODE' );
-		Configuration::deleteByName( 'VATCHECKER_REQUIRED' );
 		Configuration::deleteByName( 'VATCHECKER_ALLOW_OFFLINE' );
 		Configuration::deleteByName( 'VATCHECKER_ORIGIN_COUNTRY' );
 		Configuration::deleteByName( 'VATCHECKER_EU_COUNTRIES' );
@@ -243,7 +241,6 @@ class Vatchecker extends Module
 	{
 		$values = [
 			'VATCHECKER_LIVE_MODE'      => Configuration::get( 'VATCHECKER_LIVE_MODE', null, null, null, true ),
-			'VATCHECKER_REQUIRED'       => Configuration::get( 'VATCHECKER_REQUIRED', null, null, null, true ),
 			'VATCHECKER_ALLOW_OFFLINE'  => Configuration::get( 'VATCHECKER_ALLOW_OFFLINE', null, null, null, true ),
 			'VATCHECKER_ORIGIN_COUNTRY' => Configuration::get( 'VATCHECKER_ORIGIN_COUNTRY', null, null, null, '0' ),
 			'VATCHECKER_CUSTOMER_GROUP' => Configuration::get( 'VATCHECKER_CUSTOMER_GROUP', null, null, null, false ),
@@ -341,25 +338,6 @@ class Vatchecker extends Module
 					],
 					[
 						'type'    => 'switch',
-						'label'   => $this->l( 'Validation required' ),
-						'name'    => 'VATCHECKER_REQUIRED',
-						'is_bool' => true,
-						'desc'    => $this->l( 'If a VAT number is provided, it needs to be validated by the VIES database.' ),
-						'values'  => [
-							[
-								'id'    => 'required_enabled',
-								'value' => true,
-								'label' => $this->l( 'Enabled' ),
-							],
-							[
-								'id'    => 'required_disabled',
-								'value' => false,
-								'label' => $this->l( 'Disabled' ),
-							],
-						],
-					],
-					[
-						'type'    => 'switch',
 						'label'   => $this->l( 'Offline validation' ),
 						'name'    => 'VATCHECKER_ALLOW_OFFLINE',
 						'is_bool' => true,
@@ -434,7 +412,7 @@ class Vatchecker extends Module
 	 */
 	public function hookActionValidateCustomerAddressForm( &$params )
 	{
-		if ( empty( $params['form'] ) || ! Configuration::get( 'VATCHECKER_REQUIRED' ) ) {
+		if ( empty( $params['form'] ) || ! Configuration::get( 'VATCHECKER_LIVE_MODE' ) ) {
 			return true;
 		}
 
