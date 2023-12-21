@@ -337,20 +337,32 @@ class Vatchecker extends Module
 						],
 					],
 					[
-						'type'    => 'select',
+						'type'    => 'radio',
 						'label'   => $this->l( 'Offline validation' ),
 						'name'    => 'VATCHECKER_ALLOW_OFFLINE',
 						'required' => false,
 						'desc'    => $this->l( 'What logic should the module use when the VIES database is offline?' ),
-						'options' => [
-							'query' => [
-								['id'=>0,'name'=>"Always mark VAT as invalid"],
-								['id'=>1,'name'=>"Always mark VAT as valid"],
-								['id'=>2,'name'=>"Use previous validation value, if not previously validated mark VAT invalid"],
-								['id'=>3,'name'=>"Use previous validation value, if not previously validated mark VAT valid"]
+						'values' => [
+							[
+								'id' => 'invalid',
+								'value' => 0,
+								'label' => $this->l('Always mark VAT as invalid')
 							],
-							'id' => 'id',
-							'name' => 'name',
+							[
+								'id' => 'valid',
+								'value' => 1,
+								'label' => $this->l('Always mark VAT as valid')
+							],
+							[
+								'id' => 'exists_invalid',
+								'value' => 2,
+								'label' => $this->l('Use previous validation value, if not previously validated mark VAT as invalid')
+							],
+							[
+								'id' => 'exists_valid',
+								'value' => 3,
+								'label' => $this->l('Use previous validation value, if not previously validated mark VAT as valid')
+							]
 						],
 					],
 					[
