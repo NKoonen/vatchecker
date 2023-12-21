@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <module>
-	<name>vatchecker</name>
-	<displayName><![CDATA[Vat Checker]]></displayName>
-	<version><![CDATA[2.0.3]]></version>
-	<description><![CDATA[Check if a customers VAT number is valid and gives the customer 0 tax if the customer is not in from country.]]></description>
-	<author><![CDATA[Inform-All]]></author>
-	<tab><![CDATA[billing_invoicing]]></tab>
-	<is_configurable>1</is_configurable>
-	<need_instance>1</need_instance>
+    <name>vatchecker</name>
+    <displayName><![CDATA[Vat Checker]]></displayName>
+    <version><![CDATA[2.0.1]]></version>
+    <description><![CDATA[Check if a customers VAT number is valid and gives the customer 0 tax if the customer is not in from country.]]></description>
+    <author><![CDATA[Inform-All & Keraweb]]></author>
+    <tab><![CDATA[billing_invoicing]]></tab>
+    <is_configurable>1</is_configurable>
+    <need_instance>1</need_instance>
+	<limited_countries></limited_countries>
 </module>
