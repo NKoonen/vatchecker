@@ -2,7 +2,7 @@
 <module>
     <name>vatchecker</name>
     <displayName><![CDATA[Vat Checker]]></displayName>
-    <version><![CDATA[2.0.1]]></version>
+    <version><![CDATA[2.1.0]]></version>
     <description><![CDATA[Check if a customers VAT number is valid and gives the customer 0 tax if the customer is not in from country.]]></description>
     <author><![CDATA[Inform-All & Keraweb]]></author>
     <tab><![CDATA[billing_invoicing]]></tab>
