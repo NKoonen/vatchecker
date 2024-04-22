@@ -106,7 +106,8 @@ class Vatchecker extends Module
 		parent::__construct();
 
 		$this->displayName = $this->l( 'VAT Checker' );
-		$this->description = $this->l( 'Check if a customers VAT number is valid and gives the customer 0 tax if the customer is not in from country.' );
+		$this->description = $this->l( 'The module verifies whether a customer possesses a valid VAT EU number through the VIES VAT online service. Upon validation, it automatically applies a 0% tax rate to customers from the EU who are not from the same country as the shop.' );
+		
 
 		$this->ps_versions_compliancy = [ 'min' => '1.7', 'max' => _PS_VERSION_ ];
 	}
@@ -322,7 +323,6 @@ class Vatchecker extends Module
 						'label'   => $this->l( 'Activate module' ),
 						'name'    => 'VATCHECKER_LIVE_MODE',
 						'is_bool' => true,
-						'desc'    => $this->l( 'Use this module currently active' ),
 						'values'  => [
 							[
 								'id'    => 'active_on',
@@ -341,7 +341,7 @@ class Vatchecker extends Module
 						'label'   => $this->l( 'Offline validation' ),
 						'name'    => 'VATCHECKER_ALLOW_OFFLINE',
 						'required' => false,
-						'desc'    => $this->l( 'What logic should the module use when the VIES database is offline?' ),
+						'desc'    => $this->l( 'What should be done when the VIES VAT service is offline?' ),
 						'values' => [
 							[
 								'id' => 'invalid',
@@ -368,7 +368,7 @@ class Vatchecker extends Module
 					[
 						'col'     => 3,
 						'type'    => 'select',
-						'desc'    => $this->l( 'Select shops country' ),
+						'desc'    => $this->l( 'Select your store location' ),
 						'name'    => 'VATCHECKER_ORIGIN_COUNTRY',
 						'label'   => $this->l( 'Origin country' ),
 						'options' => [
@@ -380,7 +380,7 @@ class Vatchecker extends Module
 					[
 						'col'      => 3,
 						'type'     => 'checkbox',
-						'desc'     => $this->l( 'Select EU countries that can order without VAT' ),
+						'desc'     => $this->l( 'Select EU countries that can order with 0% VAT' ),
 						'name'     => 'VATCHECKER_EU_COUNTRIES',
 						'label'    => $this->l( 'Enabled EU countries' ),
 						'multiple' => true,
@@ -394,7 +394,7 @@ class Vatchecker extends Module
 					[
 						'type'     => 'select',
 						'label'    => $this->l( 'Business customer group' ),
-						'desc'     => $this->l( 'If a customer is has a validated VAT number set the selected group. (NOT REQUIRED)' ),
+						'desc'     => $this->l( 'If a customer has a validated VAT EU number, assign them to the selected group. (OPTIONAL)' ),
 						'name'     => 'VATCHECKER_CUSTOMER_GROUP',
 						'required' => true,
 						'options'  => [

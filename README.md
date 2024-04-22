@@ -13,6 +13,17 @@ This module is made according to the european intra-Community supply rules.
 
 - [SOAP PHP extension](https://www.php.net/manual/en/book.soap.php)
 
+
+## Installation
+
+If **Release** is not created and You want to install the module directly from GitHub repository follow below instructions:
+
+* Download the plugin https://github.com/NKoonen/vatchecker/archive/refs/heads/master.zip
+* Extract the module on your computer locally
+* Rename the folder (inside extracted folder) from `vatchecker-master` TO `vatchecker`
+* Right click the "vatchecker" folder and rezip it (make a zip file from it)
+* Use the newly created zip file as module installation file
+
 ---
 
 Feel free to update / add functions to the module.
