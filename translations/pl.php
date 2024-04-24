@@ -25,7 +25,7 @@ $_MODULE['<{vatchecker}prestashop>vatchecker_c9cc8cce247e49bae79f15173ce97354'] 
 $_MODULE['<{vatchecker}prestashop>vatchecker_48632718301f88aa265f71cdebc9cb45'] = 'Proszę wybrać kraj UE';
 $_MODULE['<{vatchecker}prestashop>vatchecker_1e1a3efdfb933ee704fa6fb3c82723e5'] = 'Proszę podać numer VAT';
 $_MODULE['<{vatchecker}prestashop>vatchecker_59777e0761f661b4683759f870443e77'] = 'Nieprawidłowy format numeru VAT';
-$_MODULE['<{vatchecker}prestashop>vatchecker_8c53573542f636780754a08bdaf81442'] = 'To nie jest ważny numer VAT';
+$_MODULE['<{vatchecker}prestashop>vatchecker_8c53573542f636780754a08bdaf81442'] = 'Nieważny numer VAT dla transakcji transgranicznych w obrębie UE';
 $_MODULE['<{vatchecker}prestashop>vatchecker_1c777bdd56e6da3b27bf1f6ddf6d64eb'] = 'Serwer EU VIES nie odpowiada';
 $_MODULE['<{vatchecker}prestashop>configure_6bccb87ab7c0c07fe673c2b1039bab4f'] = 'Vat Checker';
 $_MODULE['<{vatchecker}prestashop>configure_cad8793e5445d00f661cce8a23e63208'] = 'Wsparcie jest mile widziane';
