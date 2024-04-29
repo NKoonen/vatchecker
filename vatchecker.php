@@ -94,7 +94,7 @@ class Vatchecker extends Module
 	{
 		$this->name          = 'vatchecker';
 		$this->tab           = 'billing_invoicing';
-		$this->version       = '2.1.0';
+		$this->version       = '2.1.1';
 		$this->author        = 'Inform-All & Keraweb';
 		$this->need_instance = 1;
 
