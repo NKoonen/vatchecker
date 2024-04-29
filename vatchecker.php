@@ -942,6 +942,7 @@ class Vatchecker extends Module
 	{
 		$key = 'iso_code';
 		if ( is_numeric( $countryCode ) ) {
+			$countryCode = intval($countryCode);
 			$key = 'id_country';
 		}
 		foreach ( $this->getEUCountries() as $country ) {
