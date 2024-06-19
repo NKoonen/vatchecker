@@ -94,38 +94,35 @@ class Vatchecker extends Module
 	{
 		$this->name          = 'vatchecker';
 		$this->tab           = 'billing_invoicing';
-		$this->version       = '2.1.1';
+		$this->version       = '2.1.2';
 		$this->author        = 'Inform-All & Keraweb';
 		$this->need_instance = 1;
 
-		/**
-		 * Set $this->bootstrap to true if your module is compliant with bootstrap (PrestaShop 1.6)
-		 */
 		$this->bootstrap = true;
 
 		parent::__construct();
 
 		$this->displayName = $this->l( 'VAT Checker' );
-		$this->description = $this->l( 'The module verifies whether a customer possesses a valid VAT EU number through the VIES VAT online service. Upon validation, it automatically applies a 0% tax rate to customers from the EU who are not from the same country as the shop.' );
-		
+		$this->description = $this->l(
+			'The module verifies whether a customer possesses a valid VAT EU number through the VIES VAT online service. Upon validation, it automatically applies a 0% tax rate to customers from the EU who are not from the same country as the shop.'
+		);
 
 		$this->ps_versions_compliancy = [ 'min' => '1.7', 'max' => _PS_VERSION_ ];
 	}
 
-	/**
-	 * Don't forget to create update methods if needed:
-	 * http://doc.prestashop.com/display/PS16/Enabling+the+Auto-Update
-	 */
 	public function install()
 	{
 		Configuration::updateValue( 'VATCHECKER_LIVE_MODE', true );
 		Configuration::updateValue( 'VATCHECKER_ALLOW_OFFLINE', true );
 		Configuration::updateValue( 'VATCHECKER_CUSTOMER_GROUP', false );
-		Configuration::updateValue('VATCHECKER_EU_COUNTRIES', null );
-		Configuration::updateValue('VATCHECKER_ORIGIN_COUNTRY', null );
+		Configuration::updateValue( 'VATCHECKER_EU_COUNTRIES', null );
+		Configuration::updateValue( 'VATCHECKER_ORIGIN_COUNTRY', null );
+		Configuration::updateValue( 'VATCHECKER_TAXRATE_RULE', null );
 
 		return parent::install()
 		       && $this->installDB()
+		       && $this->registerHook( 'displayAdminProductsExtra' )
+		       && $this->registerHook( 'actionProductUpdate' )
 		       && $this->registerHook( 'displayHeader' )
 		       && $this->registerHook( 'displayBeforeBodyClosingTag' )
 		       && $this->registerHook( 'actionValidateCustomerAddressForm' );
@@ -150,7 +147,16 @@ class Vatchecker extends Module
 			PRIMARY KEY(`id_vatchecker`)
 		) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8';
 
-		return Db::getInstance()->execute( $sql );
+		if ( ! Db::getInstance()->execute( $sql ) ) {
+			return false;
+		}
+
+		$sql2 = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'vatchecker_excluded_products' . '` (
+			`id_product` INTEGER UNSIGNED NOT NULL,
+			PRIMARY KEY(`id_product`)
+		) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8';
+
+		return Db::getInstance()->execute( $sql2 );
 	}
 
 	public function uninstall()
@@ -244,6 +250,7 @@ class Vatchecker extends Module
 			'VATCHECKER_LIVE_MODE'      => Configuration::get( 'VATCHECKER_LIVE_MODE', null, null, null, true ),
 			'VATCHECKER_ALLOW_OFFLINE'  => Configuration::get( 'VATCHECKER_ALLOW_OFFLINE', null, null, null, true ),
 			'VATCHECKER_ORIGIN_COUNTRY' => Configuration::get( 'VATCHECKER_ORIGIN_COUNTRY', null, null, null, '0' ),
+			'VATCHECKER_TAXRATE_RULE'   => Configuration::get( 'VATCHECKER_TAXRATE_RULE', null, null, null, '0' ),
 			'VATCHECKER_CUSTOMER_GROUP' => Configuration::get( 'VATCHECKER_CUSTOMER_GROUP', null, null, null, false ),
 		];
 
@@ -337,32 +344,36 @@ class Vatchecker extends Module
 						],
 					],
 					[
-						'type'    => 'radio',
-						'label'   => $this->l( 'Offline validation' ),
-						'name'    => 'VATCHECKER_ALLOW_OFFLINE',
+						'type'     => 'radio',
+						'label'    => $this->l( 'Offline validation' ),
+						'name'     => 'VATCHECKER_ALLOW_OFFLINE',
 						'required' => false,
-						'desc'    => $this->l( 'What should be done when the VIES VAT service is offline?' ),
-						'values' => [
+						'desc'     => $this->l( 'What should be done when the VIES VAT service is offline?' ),
+						'values'   => [
 							[
-								'id' => 'invalid',
+								'id'    => 'invalid',
 								'value' => 0,
-								'label' => $this->l('Always mark VAT as invalid')
+								'label' => $this->l( 'Always mark VAT as invalid' ),
 							],
 							[
-								'id' => 'valid',
+								'id'    => 'valid',
 								'value' => 1,
-								'label' => $this->l('Always mark VAT as valid')
+								'label' => $this->l( 'Always mark VAT as valid' ),
 							],
 							[
-								'id' => 'exists_invalid',
+								'id'    => 'exists_invalid',
 								'value' => 2,
-								'label' => $this->l('Use previous validation value, if not previously validated mark VAT as invalid')
+								'label' => $this->l(
+									'Use previous validation value, if not previously validated mark VAT as invalid'
+								),
 							],
 							[
-								'id' => 'exists_valid',
+								'id'    => 'exists_valid',
 								'value' => 3,
-								'label' => $this->l('Use previous validation value, if not previously validated mark VAT as valid')
-							]
+								'label' => $this->l(
+									'Use previous validation value, if not previously validated mark VAT as valid'
+								),
+							],
 						],
 					],
 					[
@@ -394,7 +405,9 @@ class Vatchecker extends Module
 					[
 						'type'     => 'select',
 						'label'    => $this->l( 'Business customer group' ),
-						'desc'     => $this->l( 'If a customer has a validated VAT EU number, assign them to the selected group. (OPTIONAL)' ),
+						'desc'     => $this->l(
+							'If a customer has a validated VAT EU number, assign them to the selected group. (OPTIONAL)'
+						),
 						'name'     => 'VATCHECKER_CUSTOMER_GROUP',
 						'required' => true,
 						'options'  => [
@@ -404,7 +417,18 @@ class Vatchecker extends Module
 						],
 						'data'     => 'Disabled',
 					],
-
+					[
+						'col'     => 3,
+						'type'    => 'select',
+						'desc'    => $this->l( 'Go to International > Taxes and create a new rule with 0% tax' ),
+						'name'    => 'VATCHECKER_TAXRATE_RULE',
+						'label'   => $this->l( 'Your 0% tax rate rule' ),
+						'options' => [
+							'query' => TaxRulesGroup::getTaxRulesGroups(),
+							'id'    => 'id_tax_rules_group',
+							'name'  => 'name',
+						],
+					],
 				],
 				'submit' => [
 					'title' => $this->l( 'Save' ),
@@ -649,11 +673,7 @@ class Vatchecker extends Module
 		$table = _DB_PREFIX_ . 'vatchecker';
 
 		// Required fields.
-		if (
-			empty( $record['id_address'] ) ||
-			empty( $record['id_country'] ) ||
-			empty( $record['vat_number'] )
-		) {
+		if ( empty( $record['id_address'] ) || empty( $record['id_country'] ) || empty( $record['vat_number'] ) ) {
 			return false;
 		}
 
@@ -828,9 +848,12 @@ class Vatchecker extends Module
 
 			//$return['error'] = $this->l( $e->getMessage() );
 			$return['error'] = $this->l( 'EU VIES server not responding' );
-			$return['valid'] = $this->VIESOfflineLogicHander($params);
+			$return['valid'] = $this->VIESOfflineLogicHander( $params );
 
-			PrestaShopLogger::addLog( 'VAT check failed! (params: ' . implode( ', ', $params ) . ' , error: ' . $e->getMessage() . ')', ERROR_SEVERITY );
+			PrestaShopLogger::addLog(
+				'VAT check failed! (params: ' . implode( ', ', $params ) . ' , error: ' . $e->getMessage() . ')',
+				ERROR_SEVERITY
+			);
 		}
 
 		$cache[ $cache_key ] = $return;
@@ -838,19 +861,22 @@ class Vatchecker extends Module
 		return $return;
 	}
 
-	public function VIESOfflineLogicHander($params)
+	public function VIESOfflineLogicHander( $params )
 	{
 		switch ( Configuration::get( 'VATCHECKER_ALLOW_OFFLINE' ) ) {
 			case 1:
 			case true:
 				return true;
 			case 2:
-				$previous =  $this->getPreviousValidation($params);
-				return (!empty($previous)) ? $previous->valid : false;
+				$previous = $this->getPreviousValidation( $params );
+
+				return ( ! empty( $previous ) ) ? $previous->valid : false;
 			case 3:
-				$previous =  $this->getPreviousValidation($params);
-				return (!empty($previous)) ? $previous->valid : true;
+				$previous = $this->getPreviousValidation( $params );
+
+				return ( ! empty( $previous ) ) ? $previous->valid : true;
 		}
+
 		return false;
 	}
 
@@ -865,7 +891,7 @@ class Vatchecker extends Module
 	 */
 	private function getPreviousValidation( $params )
 	{
-		$table = _DB_PREFIX_ . 'vatchecker';
+		$table     = _DB_PREFIX_ . 'vatchecker';
 		$countryId = Country::getByIso( $params['countryCode'] );
 
 		$sql = "SELECT * FROM {$table}
@@ -942,8 +968,8 @@ class Vatchecker extends Module
 	{
 		$key = 'iso_code';
 		if ( is_numeric( $countryCode ) ) {
-			$countryCode = intval($countryCode);
-			$key = 'id_country';
+			$countryCode = intval( $countryCode );
+			$key         = 'id_country';
 		}
 		foreach ( $this->getEUCountries() as $country ) {
 			if ( $country[ $key ] === $countryCode ) {
@@ -1071,5 +1097,46 @@ class Vatchecker extends Module
 		}
 
 		return null;
+	}
+
+	public function hookDisplayAdminProductsExtra( array $params ): string
+	{
+		$id = $params['id_product'];
+
+		$result = Db::getInstance()->getRow(
+			'SELECT `id_product`
+        FROM `' . _DB_PREFIX_ . 'vatchecker_excluded_products`
+        WHERE `id_product` =' . (int) $id
+		);
+
+		if ( $result ) {
+			$skip = true;
+		} else {
+			$skip = false;
+		}
+
+		$this->context->smarty->assign( 'vatcheckerExclude', $skip );
+
+		return $this->display( __FILE__, 'views/templates/admin/create.tpl' );
+	}
+
+	public function hookActionProductUpdate( array $params )
+	{
+		$product_id = $params['id_product'];
+		$newValue   = Tools::getValue( 'vatchecker_exclude' );
+
+		if ($newValue === false ) {
+			return Db::getInstance()->delete( 'vatchecker_excluded_products', 'id_product = ' . (int) $product_id );
+		} else {
+			return Db::getInstance()->insert(
+				'vatchecker_excluded_products',
+				[
+					'id_product' => (int) $product_id,
+				],
+				false,
+				true,
+				Db::INSERT_IGNORE
+			);
+		}
 	}
 }
