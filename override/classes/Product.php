@@ -1,4 +1,7 @@
 <?php
+/**
+ * @since 3.0.0
+ */
 
 class Product extends ProductCore
 {
