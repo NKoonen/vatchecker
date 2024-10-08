@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <module>
     <name>vatchecker</name>
-    <displayName><![CDATA[Vat Checker]]></displayName>
-    <version><![CDATA[2.1.0]]></version>
-    <description><![CDATA[Check if a customers VAT number is valid and gives the customer 0 tax if the customer is not in from country.]]></description>
+    <displayName><![CDATA[VAT Checker]]></displayName>
+    <version><![CDATA[2.1.2]]></version>
+    <description><![CDATA[The module verifies whether a customer possesses a valid VAT EU number through the VIES VAT online service. Upon validation, it automatically applies a 0% tax rate to customers from the EU who are not from the same country as the shop.]]></description>
     <author><![CDATA[Inform-All & Keraweb]]></author>
     <tab><![CDATA[billing_invoicing]]></tab>
     <is_configurable>1</is_configurable>
     <need_instance>1</need_instance>
-	<limited_countries></limited_countries>
 </module>
