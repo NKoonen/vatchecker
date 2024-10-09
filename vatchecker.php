@@ -968,11 +968,10 @@ class Vatchecker extends Module
 	{
 		$key = 'iso_code';
 		if ( is_numeric( $countryCode ) ) {
-			$countryCode = intval( $countryCode );
-			$key         = 'id_country';
+			$key = 'id_country';
 		}
 		foreach ( $this->getEUCountries() as $country ) {
-			if ( $country[ $key ] === $countryCode ) {
+			if ( (string) $country[ $key ] === (string) $countryCode ) {
 				return true;
 			}
 		}
