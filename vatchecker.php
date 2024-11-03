@@ -476,6 +476,12 @@ class Vatchecker extends Module
 		}
 
 		if ( true !== $vatValid ) {
+
+			// If it's not a VIES Valid but an actually customer Tax Id / VAT Number
+		    	if($vatError === 'This is not a valid VAT number') {
+		        	return true;
+		    	}
+			
 			$form->getField( 'vat_number' )->addError( $vatError );
 
 			return false;
