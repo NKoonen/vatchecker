@@ -539,7 +539,7 @@ class Vatchecker extends Module
 		}
 
 		$checkVat  = null;
-		$cache_key = $address->id_country . $address->vat_number;
+		$cache_key = $address->id_country . '_' . $address->vat_number;
 		if ( isset( self::$cache[ $cache_key ] ) ) {
 			$checkVat = self::$cache[ $cache_key ];
 		}
@@ -745,7 +745,7 @@ class Vatchecker extends Module
 	 */
 	public function checkVat( $vatNumber, $countryCode )
 	{
-		$cache_key = $countryCode . $vatNumber;
+		$cache_key = $countryCode . '_' . $vatNumber;
 		if ( isset( self::$cache[ $cache_key ] ) ) {
 			return self::$cache[ $cache_key ];
 		}
@@ -813,7 +813,7 @@ class Vatchecker extends Module
 	{
 		// Uses own static cache.
 		static $cache = [];
-		$cache_key = $countryCode . $vatNumber;
+		$cache_key = $countryCode . '_' . $vatNumber;
 		if ( isset( $cache[ $cache_key ] ) ) {
 			return $cache[ $cache_key ];
 		}
