@@ -569,8 +569,8 @@ class Vatchecker extends Module
 
 			if ( $result ) {
 
-				// if we need to check, find if the VIES API already ran successfully within 24 hours.
-				if ( $checkIfTimedOut && (strtotime( $result['date_modified'] ) > strtotime( '-1 day' )) ) {
+				// if we do not need to check or if the VIES API already ran successfully within 24 hours, we use the existing db result
+				if ( (!$checkIfTimedOut) || (strtotime( $result['date_modified'] ) > strtotime( '-1 day' )) ) {
 					$checkVat = [
 						'valid' => (bool) $result['valid'],
 						'error' => '',
