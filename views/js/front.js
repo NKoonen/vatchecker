@@ -36,6 +36,8 @@ jQuery( function( $ ) {
 		$elem.removeClass( 'validated error text-danger text-success' );
 		$elem.siblings( '.vatchecker-result' ).remove();
 
+		var identifier = vat_number + '_' + id_country + '_' + company;
+
 		// Remove invalid characters.
 		vat_number = vat_number.toUpperCase().replace( /[^A-Z0-9]/gi, '' );
 		$elem.val( vat_number );
@@ -50,7 +52,7 @@ jQuery( function( $ ) {
 			$reloader = addReload( $elem );
 		} else {
 			// Enfore recheck.
-			delete checked[ vat_number ];
+			delete checked[ identifier ];
 		}
 
 		if ( $reloader ) {
@@ -69,8 +71,8 @@ jQuery( function( $ ) {
 			$result.html( loading );
 		}, 500 );
 
-		if ( checked.hasOwnProperty( vat_number ) ) {
-			success( checked[ vat_number ] );
+		if ( checked.hasOwnProperty( identifier ) ) {
+			success( checked[ identifier ] );
 			return;
 		}
 
@@ -114,7 +116,7 @@ jQuery( function( $ ) {
 					$result.remove();
 					$reloader.remove();
 
-					checked[ vat_number ] = resp;
+					checked[ identifier ] = resp;
 				} else if ( resp.error ) {
 					$elem.addClass( 'error text-danger' );
 					// Error message.
