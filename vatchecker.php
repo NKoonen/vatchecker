@@ -380,7 +380,7 @@ class Vatchecker extends Module
 					],
 					[
 						'type'     => 'switch',
-						'label'    => $this->l( 'Company validation' ),
+						'label'    => $this->l( 'Company name validation' ),
 						'name'     => 'VATCHECKER_VALIDATE_COMPANY',
 						'required' => false,
 						'desc'     => $this->l( 'Also compare the company name with VIES VAT information? Note: Not all countries provide this information.' ),
