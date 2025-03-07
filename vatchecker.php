@@ -617,7 +617,7 @@ class Vatchecker extends Module
 					'date_valid_vat' => '',
 				];
 
-				$checkVat = $this->checkVat( $address->vat_number, $address->id_country );
+				$checkVat = $this->checkVat( $address->vat_number, $address->id_country, $address->company );
 
 				if ( is_bool( $checkVat['valid'] ) ) {
 					$result['valid'] = $checkVat['valid'];
