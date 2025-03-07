@@ -895,7 +895,7 @@ class Vatchecker extends Module
 			} else {
 				$return['error'] = $this->l( 'This is not a valid VAT number' );
 			}
-		} catch ( Throwable $e ) {
+		} catch ( \Throwable $e ) {
 
 			//$return['error'] = $this->l( $e->getMessage() );
 			$return['error'] = $this->l( 'EU VIES server not responding' );
