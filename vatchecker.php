@@ -878,7 +878,20 @@ class Vatchecker extends Module
 			$result = $client->__soapCall( 'checkVat', [ $params ] );
 
 			if ( $result->valid === true ) {
-				$return['valid'] = true;
+
+				$valid = true;
+
+				// Compare normalized company names if available.
+				if (
+					is_string( $company ) &&
+					! empty( $result->name ) &&
+					$this->normalizeCompanyName( $company ) !== $this->normalizeCompanyName( $result->name )
+				) {
+					$valid = false;
+					$return['error'] = $this->l( 'This VAT number does not match the company name' );
+				}
+
+				$return['valid'] = $valid;
 			} else {
 				$return['error'] = $this->l( 'This is not a valid VAT number' );
 			}
@@ -1133,6 +1146,25 @@ class Vatchecker extends Module
 		}
 
 		return null;
+	}
+
+	/**
+	 * @param string $name
+	 *
+	 * @return string
+	 */
+	public function normalizeCompanyName( $name ) {
+		// Convert to lowercase
+		$name = strtolower( $name );
+		// Remove dots, commas, and other unnecessary characters
+		$name = preg_replace( '/[.,\/#!$%\^&\*;:{}=\-_`~()]/', '', $name );
+		// Remove common suffixes like "inc", "bv", "gmbh", etc.
+		$suffixes = [ 'inc', 'bv', 'gmbh', 'ltd', 'llc', 'corp', 'nv', 'sa', 'ag', 'oy', 'as', 'spa', 'srl' ];
+		foreach ( $suffixes as $suffix ) {
+			$name = preg_replace( '/\b' . $suffix . '\b/', '', $name );
+		}
+		// Trim any leading or trailing whitespace
+		return trim( $name );
 	}
 
 	public function hookDisplayAdminProductsExtra( array $params ): string
