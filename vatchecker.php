@@ -166,6 +166,7 @@ class Vatchecker extends Module
 		Configuration::deleteByName( 'VATCHECKER_ORIGIN_COUNTRY' );
 		Configuration::deleteByName( 'VATCHECKER_EU_COUNTRIES' );
 		Configuration::deleteByName( 'VATCHECKER_CUSTOMER_GROUP' );
+		Configuration::deleteByName( 'VATCHECKER_VALIDATE_COMPANY' );
 
 		return parent::uninstall();
 	}
@@ -247,11 +248,12 @@ class Vatchecker extends Module
 	protected function getConfigFormValues()
 	{
 		$values = [
-			'VATCHECKER_LIVE_MODE'      => Configuration::get( 'VATCHECKER_LIVE_MODE', null, null, null, true ),
-			'VATCHECKER_ALLOW_OFFLINE'  => Configuration::get( 'VATCHECKER_ALLOW_OFFLINE', null, null, null, true ),
-			'VATCHECKER_ORIGIN_COUNTRY' => Configuration::get( 'VATCHECKER_ORIGIN_COUNTRY', null, null, null, '0' ),
-			'VATCHECKER_TAXRATE_RULE'   => Configuration::get( 'VATCHECKER_TAXRATE_RULE', null, null, null, '0' ),
-			'VATCHECKER_CUSTOMER_GROUP' => Configuration::get( 'VATCHECKER_CUSTOMER_GROUP', null, null, null, false ),
+			'VATCHECKER_LIVE_MODE'        => Configuration::get( 'VATCHECKER_LIVE_MODE', null, null, null, true ),
+			'VATCHECKER_ALLOW_OFFLINE'    => Configuration::get( 'VATCHECKER_ALLOW_OFFLINE', null, null, null, true ),
+			'VATCHECKER_ORIGIN_COUNTRY'   => Configuration::get( 'VATCHECKER_ORIGIN_COUNTRY', null, null, null, '0' ),
+			'VATCHECKER_TAXRATE_RULE'     => Configuration::get( 'VATCHECKER_TAXRATE_RULE', null, null, null, '0' ),
+			'VATCHECKER_CUSTOMER_GROUP'   => Configuration::get( 'VATCHECKER_CUSTOMER_GROUP', null, null, null, false ),
+			'VATCHECKER_VALIDATE_COMPANY' => Configuration::get( 'VATCHECKER_VALIDATE_COMPANY', null, null, null, false ),
 		];
 
 		$countries = $this->getEnabledCountries( false );
@@ -373,6 +375,25 @@ class Vatchecker extends Module
 								'label' => $this->l(
 									'Use previous validation value, if not previously validated mark VAT as valid'
 								),
+							],
+						],
+					],
+					[
+						'type'     => 'switch',
+						'label'    => $this->l( 'Company validation' ),
+						'name'     => 'VATCHECKER_VALIDATE_COMPANY',
+						'required' => false,
+						'desc'     => $this->l( 'Also compare the company name with VIES VAT information? Note: Not all countries provide this information.' ),
+						'values'   => [
+							[
+								'id'    => 'enabled',
+								'value' => true,
+								'label' => $this->l( 'Enabled' ),
+							],
+							[
+								'id'    => 'disabled',
+								'value' => false,
+								'label' => $this->l( 'Disabled' ),
 							],
 						],
 					],
