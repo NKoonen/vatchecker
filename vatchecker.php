@@ -772,11 +772,11 @@ class Vatchecker extends Module
 	 */
 	public function checkVat( $vatNumber, $countryCode, $company = true )
 	{
-		$cache_key = $countryCode . '_' . $vatNumber;
 		if ( ! Configuration::get( 'VATCHECKER_VALIDATE_COMPANY' ) ) {
 			$company = true;
 		}
 
+		$cache_key = $countryCode . '_' . $vatNumber . '_' . $company;
 		if ( isset( self::$cache[ $cache_key ] ) ) {
 			return self::$cache[ $cache_key ];
 		}
@@ -845,7 +845,7 @@ class Vatchecker extends Module
 	{
 		// Uses own static cache.
 		static $cache = [];
-		$cache_key = $countryCode . '_' . $vatNumber;
+		$cache_key = $countryCode . '_' . $vatNumber . '_' . $company;
 		if ( isset( $cache[ $cache_key ] ) ) {
 			return $cache[ $cache_key ];
 		}
