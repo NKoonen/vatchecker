@@ -487,7 +487,12 @@ class Vatchecker extends Module
 			return true;
 		}
 
-		$checkVat = $this->checkVat( $vatNumber, $countryId );
+		$company = true;
+		if ( Configuration::get( 'VATCHECKER_VALIDATE_COMPANY' ) ) {
+			$company = $form->getField( 'company' )->getValue();
+		}
+
+		$checkVat = $this->checkVat( $vatNumber, $countryId, $company );
 		$vatValid = $checkVat['valid'];
 		$vatError = $checkVat['error'];
 
@@ -758,15 +763,20 @@ class Vatchecker extends Module
 	 *
 	 * @param  string      $vatNumber
 	 * @param  int|string  $countryCode
+	 * @param  true|string $company
 	 *
 	 * @return array {
 	 * @type bool|null     $valid Boolean or null (disabled).
 	 * @type string        $error Error notification (if any).
 	 *                            }
 	 */
-	public function checkVat( $vatNumber, $countryCode )
+	public function checkVat( $vatNumber, $countryCode, $company = true )
 	{
 		$cache_key = $countryCode . '_' . $vatNumber;
+		if ( ! Configuration::get( 'VATCHECKER_VALIDATE_COMPANY' ) ) {
+			$company = true;
+		}
+
 		if ( isset( self::$cache[ $cache_key ] ) ) {
 			return self::$cache[ $cache_key ];
 		}
@@ -813,7 +823,7 @@ class Vatchecker extends Module
 		}
 
 		// Format validated, make the call!
-		self::$cache[ $cache_key ] = $this->checkVies( $countryCode, $vatNumber );
+		self::$cache[ $cache_key ] = $this->checkVies( $countryCode, $vatNumber, $company );
 
 		return self::$cache[ $cache_key ];
 	}
@@ -822,15 +832,16 @@ class Vatchecker extends Module
 	 * @since 1.0.0
 	 * @since 2.0.0 Returns array instead of scalar.
 	 *
-	 * @param  string  $countryCode
-	 * @param  string  $vatNumber
+	 * @param  string       $countryCode
+	 * @param  string       $vatNumber
+	 * @param  true|string  $company
 	 *
 	 * @return array {
 	 * @type bool|null $valid Boolean or null (disabled).
 	 * @type string    $error Error notification (if any).
 	 *                        }
 	 */
-	protected function checkVies( $countryCode, $vatNumber )
+	protected function checkVies( $countryCode, $vatNumber, $company = true )
 	{
 		// Uses own static cache.
 		static $cache = [];
