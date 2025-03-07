@@ -14,9 +14,10 @@ $vatchecker = new Vatchecker();
 
 $vatNumber = Tools::getValue('vat_number');
 $countryId = Tools::getValue('id_country');
+$company   = Tools::getValue('company');
 
 $is_eu    = $vatchecker->isEUCountry( $countryId );
-$checkVat = $vatchecker->checkVat( $vatNumber, $countryId );
+$checkVat = $vatchecker->checkVat( $vatNumber, $countryId, $company );
 $vatValid = $checkVat['valid'];
 $vatError = $checkVat['error'];
 
