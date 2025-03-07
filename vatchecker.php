@@ -94,7 +94,7 @@ class Vatchecker extends Module
 	{
 		$this->name          = 'vatchecker';
 		$this->tab           = 'billing_invoicing';
-		$this->version       = '3.0.1';
+		$this->version       = '3.1.0';
 		$this->author        = 'Inform-All & Keraweb';
 		$this->need_instance = 1;
 
@@ -166,6 +166,7 @@ class Vatchecker extends Module
 		Configuration::deleteByName( 'VATCHECKER_ORIGIN_COUNTRY' );
 		Configuration::deleteByName( 'VATCHECKER_EU_COUNTRIES' );
 		Configuration::deleteByName( 'VATCHECKER_CUSTOMER_GROUP' );
+		Configuration::deleteByName( 'VATCHECKER_VALIDATE_COMPANY' );
 
 		return parent::uninstall();
 	}
@@ -247,11 +248,12 @@ class Vatchecker extends Module
 	protected function getConfigFormValues()
 	{
 		$values = [
-			'VATCHECKER_LIVE_MODE'      => Configuration::get( 'VATCHECKER_LIVE_MODE', null, null, null, true ),
-			'VATCHECKER_ALLOW_OFFLINE'  => Configuration::get( 'VATCHECKER_ALLOW_OFFLINE', null, null, null, true ),
-			'VATCHECKER_ORIGIN_COUNTRY' => Configuration::get( 'VATCHECKER_ORIGIN_COUNTRY', null, null, null, '0' ),
-			'VATCHECKER_TAXRATE_RULE'   => Configuration::get( 'VATCHECKER_TAXRATE_RULE', null, null, null, '0' ),
-			'VATCHECKER_CUSTOMER_GROUP' => Configuration::get( 'VATCHECKER_CUSTOMER_GROUP', null, null, null, false ),
+			'VATCHECKER_LIVE_MODE'        => Configuration::get( 'VATCHECKER_LIVE_MODE', null, null, null, true ),
+			'VATCHECKER_ALLOW_OFFLINE'    => Configuration::get( 'VATCHECKER_ALLOW_OFFLINE', null, null, null, true ),
+			'VATCHECKER_ORIGIN_COUNTRY'   => Configuration::get( 'VATCHECKER_ORIGIN_COUNTRY', null, null, null, '0' ),
+			'VATCHECKER_TAXRATE_RULE'     => Configuration::get( 'VATCHECKER_TAXRATE_RULE', null, null, null, '0' ),
+			'VATCHECKER_CUSTOMER_GROUP'   => Configuration::get( 'VATCHECKER_CUSTOMER_GROUP', null, null, null, false ),
+			'VATCHECKER_VALIDATE_COMPANY' => Configuration::get( 'VATCHECKER_VALIDATE_COMPANY', null, null, null, false ),
 		];
 
 		$countries = $this->getEnabledCountries( false );
@@ -377,6 +379,25 @@ class Vatchecker extends Module
 						],
 					],
 					[
+						'type'     => 'switch',
+						'label'    => $this->l( 'Company name validation' ),
+						'name'     => 'VATCHECKER_VALIDATE_COMPANY',
+						'required' => false,
+						'desc'     => $this->l( 'Also compare the company name with VIES VAT information? Note: Not all countries provide this information.' ),
+						'values'   => [
+							[
+								'id'    => 'enabled',
+								'value' => true,
+								'label' => $this->l( 'Enabled' ),
+							],
+							[
+								'id'    => 'disabled',
+								'value' => false,
+								'label' => $this->l( 'Disabled' ),
+							],
+						],
+					],
+					[
 						'col'     => 3,
 						'type'    => 'select',
 						'desc'    => $this->l( 'Select your store location' ),
@@ -466,7 +487,12 @@ class Vatchecker extends Module
 			return true;
 		}
 
-		$checkVat = $this->checkVat( $vatNumber, $countryId );
+		$company = true;
+		if ( Configuration::get( 'VATCHECKER_VALIDATE_COMPANY' ) ) {
+			$company = $form->getField( 'company' )->getValue();
+		}
+
+		$checkVat = $this->checkVat( $vatNumber, $countryId, $company );
 		$vatValid = $checkVat['valid'];
 		$vatError = $checkVat['error'];
 
@@ -591,7 +617,7 @@ class Vatchecker extends Module
 					'date_valid_vat' => '',
 				];
 
-				$checkVat = $this->checkVat( $address->vat_number, $address->id_country );
+				$checkVat = $this->checkVat( $address->vat_number, $address->id_country, $address->company );
 
 				if ( is_bool( $checkVat['valid'] ) ) {
 					$result['valid'] = $checkVat['valid'];
@@ -737,15 +763,20 @@ class Vatchecker extends Module
 	 *
 	 * @param  string      $vatNumber
 	 * @param  int|string  $countryCode
+	 * @param  true|string $company
 	 *
 	 * @return array {
 	 * @type bool|null     $valid Boolean or null (disabled).
 	 * @type string        $error Error notification (if any).
 	 *                            }
 	 */
-	public function checkVat( $vatNumber, $countryCode )
+	public function checkVat( $vatNumber, $countryCode, $company = true )
 	{
-		$cache_key = $countryCode . '_' . $vatNumber;
+		if ( ! Configuration::get( 'VATCHECKER_VALIDATE_COMPANY' ) ) {
+			$company = true;
+		}
+
+		$cache_key = $countryCode . '_' . $vatNumber . '_' . $company;
 		if ( isset( self::$cache[ $cache_key ] ) ) {
 			return self::$cache[ $cache_key ];
 		}
@@ -792,7 +823,7 @@ class Vatchecker extends Module
 		}
 
 		// Format validated, make the call!
-		self::$cache[ $cache_key ] = $this->checkVies( $countryCode, $vatNumber );
+		self::$cache[ $cache_key ] = $this->checkVies( $countryCode, $vatNumber, $company );
 
 		return self::$cache[ $cache_key ];
 	}
@@ -801,19 +832,20 @@ class Vatchecker extends Module
 	 * @since 1.0.0
 	 * @since 2.0.0 Returns array instead of scalar.
 	 *
-	 * @param  string  $countryCode
-	 * @param  string  $vatNumber
+	 * @param  string       $countryCode
+	 * @param  string       $vatNumber
+	 * @param  true|string  $company
 	 *
 	 * @return array {
 	 * @type bool|null $valid Boolean or null (disabled).
 	 * @type string    $error Error notification (if any).
 	 *                        }
 	 */
-	protected function checkVies( $countryCode, $vatNumber )
+	protected function checkVies( $countryCode, $vatNumber, $company = true )
 	{
 		// Uses own static cache.
 		static $cache = [];
-		$cache_key = $countryCode . '_' . $vatNumber;
+		$cache_key = $countryCode . '_' . $vatNumber . '_' . $company;
 		if ( isset( $cache[ $cache_key ] ) ) {
 			return $cache[ $cache_key ];
 		}
@@ -846,11 +878,24 @@ class Vatchecker extends Module
 			$result = $client->__soapCall( 'checkVat', [ $params ] );
 
 			if ( $result->valid === true ) {
-				$return['valid'] = true;
+
+				$valid = true;
+
+				// Compare normalized company names if available.
+				if (
+					is_string( $company ) &&
+					! empty( $result->name ) &&
+					$this->normalizeCompanyName( $company ) !== $this->normalizeCompanyName( $result->name )
+				) {
+					$valid = false;
+					$return['error'] = $this->l( 'This VAT number does not match the company name' );
+				}
+
+				$return['valid'] = $valid;
 			} else {
 				$return['error'] = $this->l( 'This is not a valid VAT number' );
 			}
-		} catch ( Throwable $e ) {
+		} catch ( \Throwable $e ) {
 
 			//$return['error'] = $this->l( $e->getMessage() );
 			$return['error'] = $this->l( 'EU VIES server not responding' );
@@ -1101,6 +1146,25 @@ class Vatchecker extends Module
 		}
 
 		return null;
+	}
+
+	/**
+	 * @param string $name
+	 *
+	 * @return string
+	 */
+	public function normalizeCompanyName( $name ) {
+		// Convert to lowercase
+		$name = strtolower( $name );
+		// Remove dots, commas, and other unnecessary characters
+		$name = preg_replace( '/[.,\/#!$%\^&\*;:{}=\-_`~()]/', '', $name );
+		// Remove common suffixes like "inc", "bv", "gmbh", etc.
+		$suffixes = [ 'inc', 'bv', 'gmbh', 'ltd', 'llc', 'corp', 'nv', 'sa', 'ag', 'oy', 'as', 'spa', 'srl' ];
+		foreach ( $suffixes as $suffix ) {
+			$name = preg_replace( '/\b' . $suffix . '\b/', '', $name );
+		}
+		// Trim any leading or trailing whitespace
+		return trim( $name );
 	}
 
 	public function hookDisplayAdminProductsExtra( array $params ): string

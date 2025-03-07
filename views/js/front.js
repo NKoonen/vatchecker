@@ -32,9 +32,11 @@ jQuery( function( $ ) {
 	var $document = $(document),
 		checked   = {};
 
-	vatchecker.validate = function( vat_number, id_country, $elem, $reloader ) {
+	vatchecker.validate = function( vat_number, id_country, company, $elem, $reloader ) {
 		$elem.removeClass( 'validated error text-danger text-success' );
 		$elem.siblings( '.vatchecker-result' ).remove();
+
+		var identifier = vat_number + '_' + id_country + '_' + company;
 
 		// Remove invalid characters.
 		vat_number = vat_number.toUpperCase().replace( /[^A-Z0-9]/gi, '' );
@@ -50,7 +52,7 @@ jQuery( function( $ ) {
 			$reloader = addReload( $elem );
 		} else {
 			// Enfore recheck.
-			delete checked[ vat_number ];
+			delete checked[ identifier ];
 		}
 
 		if ( $reloader ) {
@@ -69,8 +71,8 @@ jQuery( function( $ ) {
 			$result.html( loading );
 		}, 500 );
 
-		if ( checked.hasOwnProperty( vat_number ) ) {
-			success( checked[ vat_number ] );
+		if ( checked.hasOwnProperty( identifier ) ) {
+			success( checked[ identifier ] );
 			return;
 		}
 
@@ -86,6 +88,7 @@ jQuery( function( $ ) {
 				vatchecker: vatchecker.token,
 				vat_number: vat_number,
 				id_country: id_country,
+				company: company,
 			},
 			dataType: 'json',
 			success: function ( resp ) {
@@ -113,7 +116,7 @@ jQuery( function( $ ) {
 					$result.remove();
 					$reloader.remove();
 
-					checked[ vat_number ] = resp;
+					checked[ identifier ] = resp;
 				} else if ( resp.error ) {
 					$elem.addClass( 'error text-danger' );
 					// Error message.
@@ -143,9 +146,10 @@ jQuery( function( $ ) {
 
 		$reloader.on( 'click touchend', function() {
 			var $form    = $vat.parents( 'form' ),
-				$country = $form.find('[name="id_country"]');
+				$country = $form.find('[name="id_country"]'),
+				$company = $form.find('[name="company"]');
 
-			vatchecker.validate( $vat.val(), $country.val(), $vat, $reloader );
+			vatchecker.validate( $vat.val(), $country.val(), $company.val(), $vat, $reloader );
 		} );
 
 		return $reloader;
@@ -154,17 +158,28 @@ jQuery( function( $ ) {
 	$document.on( 'blur', '[name="vat_number"]', function () {
 		var $vat     = $( this ),
 			$form    = $vat.parents( 'form' ),
-			$country = $form.find('[name="id_country"]');
+			$country = $form.find('[name="id_country"]'),
+			$company = $form.find('[name="company"]');
 
-		vatchecker.validate( $vat.val(), $country.val(), $vat );
+		vatchecker.validate( $vat.val(), $country.val(), $company.val(), $vat );
 	} );
 
 	$document.on( 'change', '[name="id_country"]', function() {
 		var $country = $( this ),
 			$form    = $country.parents( 'form' ),
-			$vat     = $form.find('[name="vat_number"]');
+			$vat     = $form.find('[name="vat_number"]'),
+			$company = $form.find('[name="company"]');
 
-		vatchecker.validate( $vat.val(), $country.val(), $vat );
+		vatchecker.validate( $vat.val(), $country.val(), $company.val(), $vat );
+	} );
+
+	$document.on( 'change', '[name="company"]', function() {
+		var $company = $( this ),
+			$form    = $company.parents( 'form' ),
+			$vat     = $form.find('[name="vat_number"]'),
+			$country = $form.find('[name="id_country"]');
+
+		vatchecker.validate( $vat.val(), $country.val(), $company.val(), $vat );
 	} );
 
 } );
