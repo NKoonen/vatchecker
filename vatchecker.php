@@ -94,7 +94,7 @@ class Vatchecker extends Module
 	{
 		$this->name          = 'vatchecker';
 		$this->tab           = 'billing_invoicing';
-		$this->version       = '3.1.0';
+		$this->version       = '3.1.1';
 		$this->author        = 'Inform-All & Keraweb';
 		$this->need_instance = 1;
 
@@ -118,6 +118,7 @@ class Vatchecker extends Module
 		Configuration::updateValue( 'VATCHECKER_EU_COUNTRIES', null );
 		Configuration::updateValue( 'VATCHECKER_ORIGIN_COUNTRY', null );
 		Configuration::updateValue( 'VATCHECKER_TAXRATE_RULE', null );
+		Configuration::updateValue( 'VATCHECKER_CARRIER_NOTAX', true );
 
 		return parent::install()
 		       && $this->installDB()
@@ -167,6 +168,7 @@ class Vatchecker extends Module
 		Configuration::deleteByName( 'VATCHECKER_EU_COUNTRIES' );
 		Configuration::deleteByName( 'VATCHECKER_CUSTOMER_GROUP' );
 		Configuration::deleteByName( 'VATCHECKER_VALIDATE_COMPANY' );
+		Configuration::deleteByName( 'VATCHECKER_CARRIER_NOTAX' );
 
 		return parent::uninstall();
 	}
@@ -254,6 +256,7 @@ class Vatchecker extends Module
 			'VATCHECKER_TAXRATE_RULE'     => Configuration::get( 'VATCHECKER_TAXRATE_RULE', null, null, null, '0' ),
 			'VATCHECKER_CUSTOMER_GROUP'   => Configuration::get( 'VATCHECKER_CUSTOMER_GROUP', null, null, null, false ),
 			'VATCHECKER_VALIDATE_COMPANY' => Configuration::get( 'VATCHECKER_VALIDATE_COMPANY', null, null, null, false ),
+			'VATCHECKER_CARRIER_NOTAX' 	  => Configuration::get( 'VATCHECKER_CARRIER_NOTAX', null, null, null, true ),
 		];
 
 		$countries = $this->getEnabledCountries( false );
@@ -384,6 +387,25 @@ class Vatchecker extends Module
 						'name'     => 'VATCHECKER_VALIDATE_COMPANY',
 						'required' => false,
 						'desc'     => $this->l( 'Also compare the company name with VIES VAT information? Note: Not all countries provide this information.' ),
+						'values'   => [
+							[
+								'id'    => 'enabled',
+								'value' => true,
+								'label' => $this->l( 'Enabled' ),
+							],
+							[
+								'id'    => 'disabled',
+								'value' => false,
+								'label' => $this->l( 'Disabled' ),
+							],
+						],
+					],
+					[
+						'type'     => 'switch',
+						'label'    => $this->l( 'Also set shipping tax rate' ),
+						'name'     => 'VATCHECKER_CARRIER_NOTAX',
+						'required' => false,
+						'desc'     => $this->l( 'When your customer can order without tax, also set the shipping tax rate' ),
 						'values'   => [
 							[
 								'id'    => 'enabled',
