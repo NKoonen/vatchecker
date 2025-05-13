@@ -809,22 +809,22 @@ class Vatchecker extends Module
 				'error' => '',
 			];
 		}
-		$return = [
-			'valid' => false,
-			'error' => '',
-		];
 
 		if ( is_numeric( $countryCode ) ) {
 			$countryCode = Country::getIsoById( $countryCode );
 		}
 
 		if ( ! $countryCode || ! $this->isEUCountry( $countryCode ) ) {
-			$return['error'] = $this->l( 'Please select an EU country' );
-
-			self::$cache[ $cache_key ] = $return;
-
-			return $return;
+			return [
+				'valid' => null,
+				'error' => '',
+			];
 		}
+
+		$return = [
+			'valid' => false,
+			'error' => '',
+		];
 
 		if ( ! $vatNumber ) {
 			$return['error'] = $this->l( 'Please provide a VAT number' );
