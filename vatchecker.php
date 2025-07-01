@@ -906,6 +906,7 @@ class Vatchecker extends Module
 				// Compare normalized company names if available.
 				if (
 					is_string( $company ) &&
+					! empty( $result->name ) &&
 					/**
      					 * @since 3.1.3 Check for a real company name (requires letters or numbers). Fixes issue when "---" is returned.
       					 */
