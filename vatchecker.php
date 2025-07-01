@@ -94,7 +94,7 @@ class Vatchecker extends Module
 	{
 		$this->name          = 'vatchecker';
 		$this->tab           = 'billing_invoicing';
-		$this->version       = '3.1.2';
+		$this->version       = '3.1.3';
 		$this->author        = 'Inform-All & Keraweb';
 		$this->need_instance = 1;
 
@@ -907,6 +907,10 @@ class Vatchecker extends Module
 				if (
 					is_string( $company ) &&
 					! empty( $result->name ) &&
+					/**
+     					 * @since 3.1.3 Check for a real company name (requires letters or numbers). Fixes issue when "---" is returned.
+      					 */
+					! empty( preg_replace( "/[^a-zA-Z0-9]+/", "", $result->name ) ) &&
 					$this->normalizeCompanyName( $company ) !== $this->normalizeCompanyName( $result->name )
 				) {
 					$valid = false;
