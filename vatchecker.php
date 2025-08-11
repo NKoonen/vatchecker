@@ -94,7 +94,7 @@ class Vatchecker extends Module
 	{
 		$this->name          = 'vatchecker';
 		$this->tab           = 'billing_invoicing';
-		$this->version       = '3.1.3';
+		$this->version       = '3.1.4';
 		$this->author        = 'Inform-All & Keraweb';
 		$this->need_instance = 1;
 
@@ -192,8 +192,8 @@ class Vatchecker extends Module
 	public function hookDisplayBeforeBodyClosingTag( $params )
 	{
 		$json = [
-			'ajax_url' => $this->getPathUri() . 'ajax.php',
-			'token'    => Tools::getToken( 'vatchecker' ),
+			'ajax_url' => $this->context->link->getModuleLink('vatchecker', 'ajax'),
+			'token'    => Tools::getToken('vatchecker'),
 		];
 
 		echo '<script id="vatchecker_js">var vatchecker = ' . json_encode( $json ) . '</script>';
