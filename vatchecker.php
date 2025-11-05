@@ -88,6 +88,24 @@ class Vatchecker extends Module
 	];
 
 	/**
+	 * List of used config and default settings.
+	 *
+	 * @since 2.0.0
+	 * @var array
+	 */
+	private const CONFIG_DEFAULTS = [
+		'VATCHECKER_LIVE_MODE'       => true,
+		'VATCHECKER_ALLOW_OFFLINE'   => true,
+		'VATCHECKER_CUSTOMER_GROUP'  => false,
+		'VATCHECKER_EU_COUNTRIES'    => '',
+		'VATCHECKER_ORIGIN_COUNTRY'  => '',
+		'VATCHECKER_TAXRATE_RULE'    => '',
+		'VATCHECKER_CARRIER_NOTAX'   => true,
+		'VATCHECKER_VALIDATE_COMPANY'=> false,
+		'VATCHECKER_ADDRESS_SELECT'  => '',
+	];
+
+	/**
 	 * @inheritDoc
 	 */
 	public function __construct()
@@ -112,21 +130,17 @@ class Vatchecker extends Module
 
 	public function install()
 	{
-		Configuration::updateValue( 'VATCHECKER_LIVE_MODE', true );
-		Configuration::updateValue( 'VATCHECKER_ALLOW_OFFLINE', true );
-		Configuration::updateValue( 'VATCHECKER_CUSTOMER_GROUP', false );
-		Configuration::updateValue( 'VATCHECKER_EU_COUNTRIES', null );
-		Configuration::updateValue( 'VATCHECKER_ORIGIN_COUNTRY', null );
-		Configuration::updateValue( 'VATCHECKER_TAXRATE_RULE', null );
-		Configuration::updateValue( 'VATCHECKER_CARRIER_NOTAX', true );
+		foreach (self::CONFIG_DEFAULTS as $key => $value) {
+			Configuration::updateValue($key, $value);
+		}
 
 		return parent::install()
-		       && $this->installDB()
-		       && $this->registerHook( 'displayAdminProductsExtra' )
-		       && $this->registerHook( 'actionProductUpdate' )
-		       && $this->registerHook( 'displayHeader' )
-		       && $this->registerHook( 'displayBeforeBodyClosingTag' )
-		       && $this->registerHook( 'actionValidateCustomerAddressForm' );
+			   && $this->installDB()
+			   && $this->registerHook( 'displayAdminProductsExtra' )
+			   && $this->registerHook( 'actionProductUpdate' )
+			   && $this->registerHook( 'displayHeader' )
+			   && $this->registerHook( 'displayBeforeBodyClosingTag' )
+			   && $this->registerHook( 'actionValidateCustomerAddressForm' );
 	}
 
 	/**
@@ -162,15 +176,11 @@ class Vatchecker extends Module
 
 	public function uninstall()
 	{
-		Configuration::deleteByName( 'VATCHECKER_LIVE_MODE' );
-		Configuration::deleteByName( 'VATCHECKER_ALLOW_OFFLINE' );
-		Configuration::deleteByName( 'VATCHECKER_ORIGIN_COUNTRY' );
-		Configuration::deleteByName( 'VATCHECKER_EU_COUNTRIES' );
-		Configuration::deleteByName( 'VATCHECKER_CUSTOMER_GROUP' );
-		Configuration::deleteByName( 'VATCHECKER_VALIDATE_COMPANY' );
-		Configuration::deleteByName( 'VATCHECKER_CARRIER_NOTAX' );
-
-		return parent::uninstall();
+		$ok = true;
+		foreach (array_keys(self::CONFIG_DEFAULTS) as $key) {
+			$ok = Configuration::deleteByName($key) && $ok;
+		}
+		return parent::uninstall() && $ok;
 	}
 
 	/**
