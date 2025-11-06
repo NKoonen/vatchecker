@@ -10,19 +10,13 @@ class Product extends ProductCore
 		if ( ! $context ) {
 			$context = Context::getContext();
 		}
-		if(!empty($context->cart->id_address_delivery))
-		{
-			$delivery_address = new Address( $context->cart->id_address_delivery );
-		}else{
-			$delivery_address = false;
-		}
+		$vatchecker = Module::getInstanceByName( 'vatchecker' );
+		$addressToCheck = $vatchecker->selectAddressFromCart($context->cart);
 
 		$key = 'product_id_tax_rules_group_' . (int) $id_product . '_' . (int) $context->shop->id;
+		if ( $addressToCheck ) {
 
-		if ( $delivery_address ) {
-			/** @var Vatchecker $vatchecker */
-			$vatchecker = Module::getInstanceByName( 'vatchecker' );
-			if ( $vatchecker && $vatchecker->canOrderWithoutVat( $delivery_address ) ) {
+			if ( $vatchecker && $vatchecker->canOrderWithoutVat( $addressToCheck ) ) {
 				// VatChecker module is used.
 				$skipProduct = Db::getInstance()->getRow(
 					'SELECT `id_product`
