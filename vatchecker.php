@@ -632,7 +632,7 @@ class Vatchecker extends Module
 		}
 
 		// Fallback to cart’s default tax address when no VAT fields are filled in at all
-		return new Address((int) $cart->getTaxAddressId());
+		return $shipping_address ?? $invoice_address;
 	}
 
 	/**
