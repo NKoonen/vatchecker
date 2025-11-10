@@ -460,11 +460,11 @@ class Vatchecker extends Module
 								],
 								[
 									'id'   => 'invoice_prio',
-									'name' => $this->l('Prioritise invoice address else shipping address'),
+									'name' => $this->l('Prioritise invoice address over shipping address'),
 								],
 								[
 									'id'   => 'shipping_prio',
-									'name' => $this->l('Prioritise shipping address else invoice address'),
+									'name' => $this->l('Prioritise shipping address over invoice address'),
 								],
 							],
 							'id'   => 'id',
@@ -586,6 +586,10 @@ class Vatchecker extends Module
 	 */
 	public function selectAddressFromCart($cart)
 	{
+		if($cart == null){
+			return false;
+		}
+
 		$shipping_address = !empty($cart->id_address_delivery)
 			? new Address((int) $cart->id_address_delivery)
 			: false;
@@ -632,7 +636,7 @@ class Vatchecker extends Module
 		}
 
 		// Fallback to cart’s default tax address when no VAT fields are filled in at all
-		return $shipping_address ?? $invoice_address;
+		return new Address((int) $cart->getTaxAddressId());
 	}
 
 	/**
