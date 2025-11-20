@@ -445,7 +445,7 @@ class Vatchecker extends Module
 					[
 						'col'     => 3,
 						'type'    => 'select',
-						'desc'    => $this->l('What address will be checked for a VAT number?'),
+						'desc' => $this->l('What address will be checked for a VAT number?') . '<br>' .$this->l('A foreign shipping address is required at all times'),
 						'name'    => 'VATCHECKER_ADDRESS_SELECT',
 						'label'   => $this->l('Address check options'),
 						'options' => [
@@ -605,16 +605,10 @@ class Vatchecker extends Module
 
 		switch ($addressCheckMethod) {
 			case 'shipping_only':
-				if (!empty($shipVat)) {
-					return $shipping_address;
-				}
-			break;
+				return $shipping_address;
 
 			case 'invoice_only':
-				if (!empty($invVat)) {
-					return $invoice_address;
-				}
-			break;
+				return $invoice_address;
 
 			case 'invoice_prio':
 				if (!empty($invVat)) {
@@ -652,8 +646,10 @@ class Vatchecker extends Module
 	{
 		if($this->context->cart){
 			$address = $this->selectAddressFromCart($this->context->cart);
+			$shipAddressId = (int) $this->context->cart->id_address_delivery;
 		}else{
 			$address = $this->getAddress( $address );
+			$shipAddressId = false;
 		}
 
 		if ( ! $address ) {
@@ -665,6 +661,10 @@ class Vatchecker extends Module
 		}
 
 		if ( $this->isOriginCountry( $address->id_country ) ) {
+			return false;
+		}
+
+		if ($shipAddressId && $this->isOriginCountry($this->getAddress($shipAddressId)->id_country)) {
 			return false;
 		}
 
