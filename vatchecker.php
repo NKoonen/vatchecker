@@ -112,7 +112,7 @@ class Vatchecker extends Module
 	{
 		$this->name          = 'vatchecker';
 		$this->tab           = 'billing_invoicing';
-		$this->version       = '3.1.4';
+		$this->version       = '3.1.5';
 		$this->author        = 'Inform-All & Keraweb';
 		$this->need_instance = 1;
 
@@ -267,6 +267,7 @@ class Vatchecker extends Module
 			'VATCHECKER_CUSTOMER_GROUP'   => Configuration::get( 'VATCHECKER_CUSTOMER_GROUP', null, null, null, false ),
 			'VATCHECKER_VALIDATE_COMPANY' => Configuration::get( 'VATCHECKER_VALIDATE_COMPANY', null, null, null, false ),
 			'VATCHECKER_CARRIER_NOTAX' 	  => Configuration::get( 'VATCHECKER_CARRIER_NOTAX', null, null, null, true ),
+			'VATCHECKER_ADDRESS_SELECT'   => Configuration::get( 'VATCHECKER_ADDRESS_SELECT', null, null, null, 'shipping_only' ),
 		];
 
 		$countries = $this->getEnabledCountries( false );
@@ -442,6 +443,35 @@ class Vatchecker extends Module
 						],
 					],
 					[
+						'col'     => 3,
+						'type'    => 'select',
+						'desc' => $this->l('What address will be checked for a VAT number?') . '<br>' .$this->l('A foreign shipping address is required at all times'),
+						'name'    => 'VATCHECKER_ADDRESS_SELECT',
+						'label'   => $this->l('Address check options'),
+						'options' => [
+							'query' => [
+								[
+									'id'   => 'shipping_only',
+									'name' => $this->l('Shipping address only'),
+								],
+								[
+									'id'   => 'invoice_only',
+									'name' => $this->l('Invoice address only'),
+								],
+								[
+									'id'   => 'invoice_prio',
+									'name' => $this->l('Prioritise invoice address over shipping address'),
+								],
+								[
+									'id'   => 'shipping_prio',
+									'name' => $this->l('Prioritise shipping address over invoice address'),
+								],
+							],
+							'id'   => 'id',
+							'name' => 'name',
+						],
+					],
+					[
 						'col'      => 3,
 						'type'     => 'checkbox',
 						'desc'     => $this->l( 'Select EU countries that can order with 0% VAT' ),
@@ -548,6 +578,62 @@ class Vatchecker extends Module
 	}
 
 	/**
+	 * Select the address based on module settings.
+	 *
+	 * @since 3.1.5
+	 *
+	 * @return Address
+	 */
+	public function selectAddressFromCart($cart)
+	{
+		if($cart == null){
+			return false;
+		}
+
+		$shipping_address = !empty($cart->id_address_delivery)
+			? new Address((int) $cart->id_address_delivery)
+			: false;
+
+		$invoice_address = !empty($cart->id_address_invoice)
+			? new Address((int) $cart->id_address_invoice)
+			: false;
+
+		$shipVat = ($shipping_address && !empty($shipping_address->vat_number)) ? $shipping_address->vat_number : false;
+		$invVat  = ($invoice_address && !empty($invoice_address->vat_number)) ? $invoice_address->vat_number : false;
+
+		$addressCheckMethod = Configuration::get('VATCHECKER_ADDRESS_SELECT');
+
+		switch ($addressCheckMethod) {
+			case 'shipping_only':
+				return $shipping_address;
+
+			case 'invoice_only':
+				return $invoice_address;
+
+			case 'invoice_prio':
+				if (!empty($invVat)) {
+					return $invoice_address;
+				}
+				if (!empty($shipVat)) {
+					return $shipping_address;
+				}
+			break;
+
+			case 'shipping_prio':
+				if (!empty($shipVat)) {
+					return $shipping_address;
+				}
+				if (!empty($invVat)) {
+					return $invoice_address;
+				}
+			break;
+		}
+
+		// Fallback to cart’s default tax address when no VAT fields are filled in at all
+		return new Address((int) $cart->getTaxAddressId());
+	}
+
+	/**
 	 * Check if an address can order without VAT.
 	 *
 	 * @since 2.0.0
@@ -558,12 +644,14 @@ class Vatchecker extends Module
 	 */
 	public function canOrderWithoutVat( $address = null )
 	{
-		if ( ! $address ) {
-			if ( $this->context->cart ) {
-				$address = $this->context->cart->getTaxAddressId();
-			}
+		if($this->context->cart){
+			$address = $this->selectAddressFromCart($this->context->cart);
+			$shipAddressId = (int) $this->context->cart->id_address_delivery;
+		}else{
+			$address = $this->getAddress( $address );
+			$shipAddressId = false;
 		}
-		$address = $this->getAddress( $address );
+
 		if ( ! $address ) {
 			return false;
 		}
@@ -573,6 +661,10 @@ class Vatchecker extends Module
 		}
 
 		if ( $this->isOriginCountry( $address->id_country ) ) {
+			return false;
+		}
+
+		if ($shipAddressId && $this->isOriginCountry($this->getAddress($shipAddressId)->id_country)) {
 			return false;
 		}
 
